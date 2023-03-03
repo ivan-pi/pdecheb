@@ -29,8 +29,8 @@ C     psi   array of past stepsize history
 C-----------------------------------------------------------------------
 C
       IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION YOUT(1),YPOUT(1)
-      DIMENSION PHI(NEQ,1),PSI(1)
+      DIMENSION YOUT(*),YPOUT(*)
+      DIMENSION PHI(NEQ,*),PSI(*)
       KOLDP1=KOLD+1
       TEMP1=XOUT-X
       DO 10 I=1,NEQ

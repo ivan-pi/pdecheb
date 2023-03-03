@@ -15,7 +15,7 @@ C     .. Array Arguments ..
      *                Q(NPDE,NPTL), QT(NPDE,NPTL), R(NPDE,NPTL),
      *                RES(NPDE,NPTS), RT(NPDE,NPTL), U(NPDE,NPTS),
      *                UDOT(NPDE,NPTS), UDT(NPDE,NPTL), UTDX(NPDE,NPTL),
-     *                V(1), VDOT(1), VDUM(1), X(NPTS), XBK(1), XC(NPTL)
+     *                V(1), VDOT(1), VDUM(1), X(NPTS), XBK(*), XC(NPTL)
 C     .. Scalars in Common ..
       DOUBLE PRECISIONTWOU
 C     .. Local Scalars ..
