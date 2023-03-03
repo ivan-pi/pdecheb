@@ -1,0 +1,137 @@
+      SUBROUTINE ERROR(U,NPDE,NPTS,X,M,ENORM,GERR,T,RELERR,ABSERR,
+     *                 ITRACE,RWK,IWK)
+C
+C**********************************************************************
+C       THE FOLLOWING ROUTINE COMPUTES THE ERROR ENORM IN THE NUMERICAL
+C       SOLUTION BY USING A COMBINATION OF THE L2 FUNCTION AND VECTOR
+C       NORMS. GERR IS THE MAXIMUM ERROR AT THE GRID POINTS
+C       THE EXACT SOLUTION IS ASSUMED TO BE GIVEN BY THE USER PROVIDED
+C                SUBROUTINE EXACT(T,NPDE, NP, XP, US)
+C                DOUBLE PRECISION US(NPDE, NP),XP(NP),T
+C                WHERE US(J,I) ON EXIT CONTAINS THE SOLUTION AT TIME T
+C                FOR NPDE J AT THE MESH POINT XP(I)
+C
+C     PARAMETER LIST
+C     --------------
+C  U(NEQN)        SOLUTION VECTOR  COMPUTED BY DASSL AT TIME T . ON
+C                 ENTRY THIS ARRAY IS ASSUMED TO BE ORDERED AS FOLLOWS
+C                 U(1) - U(NPDE*NPTS)      P.D.E. SOLUTION COMPONENTS.
+C                 U(NPDE*NPTS+1) - U(NEQN) O.D.E. COMPONENTS THAT ARE
+C                 COUPLED TO THE P.D.E.
+C
+C  NPDE           NUMBER OF PARABOLIC P.D.E.S IN ONE SPACE DIMENSION
+C
+C  NPTS           NUMBER OF SPATIAL GRID POINTS USED IN M.O.L. SOLUTION.
+C                 NOTE THIS SHOULD BE EQUAL TO (NPTL-1)*NEL + 1
+C
+C  X(NPTS)        ON ENTRY THIS ARRAY MUST
+C                 CONTAIN THE MESH USED IN SEMI-DISCRETISATION
+C
+C  M              =0,1,2 IF CARTESIAN CYLINDRICAL OR SPHERICAL POLARS.
+C
+C  ENORM          L2 ERROR NORM ESTIMATED BY USING TRAPEZOIDAL RULE
+C                 WITH 100 EVENLY SPACED POINTS IS OUTPUT IN ENORM
+C
+C  GERR           MAXIMUM GRID ERROR OVER THE ARRAY OF SPATIAL GRID
+C                 POINTS X(NPTS) IS OUTPUT IN GERR
+C
+C  T              CURRENT TIME LEVEL OF TIME INTEGRATION ( INPUT).
+C
+C  RELERR         RELATIVE ERROR TOLERANCE SUPPLIED TO DASSL (RTOL IN
+C                 THE CALL TO THAT ROUTINE) (INPUT)
+C
+C  ABSERR         ABSOLUTE ERROR TOLERANCE SUPPLIED TO DASSL (ATOL IN
+C                 THE CALL TO THAT ROUTINE). (INPUT)
+C
+C  ITRACE         INTEGER TRACE LEVEL SET TO ZERO FOR NO TRACE SET =1
+C                 FOR TRACE INFORMATION.   (INPUT)
+C
+C  RWK(IWK)       REAL WORKSPACE INITIALISED BT INICHB AND PASSED TO
+C                 THE D.A.E.FUNCTION CALL ROUTINE  RESID
+C                 SEE BELOW FOR A DETAILED DESCRIPTION.(INPUT)
+C
+C***********************************************************************
+C     .. Scalar Arguments ..
+      DOUBLE PRECISION ABSERR, ENORM, GERR, RELERR, T
+      INTEGER          ITRACE, IWK, M, NPDE, NPTS
+C     .. Array Arguments ..
+      DOUBLE PRECISION RWK(IWK), U(NPDE,NPTS), X(NPTS)
+C     .. Scalars in Common ..
+      INTEGER          IDEV
+C     .. Local Scalars ..
+      DOUBLE PRECISION EABS, EPS, ER, EREL, HH, WS
+      INTEGER          I, IFLAG, IN, IONE, JI, NEQ, NP
+C     .. Local Arrays ..
+      DOUBLE PRECISION ERR(5), UN(5), US(404), WX(5), XP(201)
+C     .. External Subroutines ..
+      EXTERNAL         EXACT, INTERC
+C     .. Intrinsic Functions ..
+      INTRINSIC        DABS, DMAX1, DSQRT
+C     .. Common blocks ..
+      COMMON           /SCHSZ2/IDEV
+C     .. Save statement ..
+      SAVE             /SCHSZ2/
+C     .. Executable Statements ..
+      IONE = 1
+C
+C   SET UP L2 NORM WEIGHTS AND ESTIMATE NORM USING NP POINTS
+C
+      EPS = DMAX1(RELERR,ABSERR)
+      IF (EPS.LE.0.0) RETURN
+      EREL = RELERR/EPS
+      EABS = ABSERR/EPS
+      DO 40 IN = 1, NPDE
+         WX(IN) = 0.0D0
+         DO 20 I = 1, NPTS
+            EPS = DABS(U(IN,I))
+            IF (WX(IN).LT.EPS) WX(IN) = EPS
+   20    CONTINUE
+         WX(IN) = WX(IN)*EREL + EABS
+   40 CONTINUE
+      NP = 201
+      HH = (X(NPTS)-X(1))/(NP-1)
+      DO 60 IN = 1, NPDE
+         ERR(IN) = 0.0D0
+   60 CONTINUE
+      WS = 1.0D0
+      DO 80 I = 1, NP
+         XP(I) = X(1) + (I-1)*HH
+   80 CONTINUE
+      NEQ = NPTS*NPDE
+      CALL INTERC(XP,US,NP,U,NEQ,NPDE,IFLAG,IONE,RWK,IWK)
+      JI = 1
+      DO 120 I = 1, NP
+         CALL EXACT(T,NPDE,IONE,XP(I),UN)
+         IF (M.NE.0) WS = XP(I)**M
+         DO 100 IN = 1, NPDE
+            ER = DABS(US(JI)-UN(IN))
+            ERR(IN) = ERR(IN) + WS*ER**2
+            JI = JI + 1
+  100    CONTINUE
+  120 CONTINUE
+      ENORM = 0.0D0
+      DO 140 IN = 1, NPDE
+         ENORM = ENORM + ERR(IN)/WX(IN)**2
+  140 CONTINUE
+      ENORM = DSQRT(ENORM*HH)
+C
+C       COMPUTE THE MAXIMUM ERROR AT THE GRID POINTS
+C
+      IF (ITRACE.GE.1) WRITE (IDEV,FMT=99999)
+      GERR = 0.0D0
+      DO 180 I = 1, NPTS
+         CALL EXACT(T,NPDE,IONE,X(I),UN)
+         DO 160 IN = 1, NPDE
+            ER = DABS(U(IN,I)-UN(IN))
+            IF (ITRACE.GE.1) WRITE (IDEV,FMT=99998) X(I), U(IN,I),
+     *          UN(IN), ER
+            IF (GERR.LT.ER) GERR = ER
+  160    CONTINUE
+  180 CONTINUE
+      IF (ITRACE.GT.0) WRITE (IDEV,FMT=99997) ENORM, GERR
+      RETURN
+C
+99999 FORMAT (6X,' MESH',6X,'NUM SOL',10X,'SOL',7X,'ERROR')
+99998 FORMAT (4(2X,D11.3))
+99997 FORMAT ('  ENORM=',D11.3,'       GERR=',D11.3)
+      END
