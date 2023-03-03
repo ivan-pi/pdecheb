@@ -1,0 +1,182 @@
+C     C0 COLLOCATION PARAMETERS
+        PARAMETER ( IBK   = 21, NEL  = IBK-1 , NPDE = 1, NV = 1,
+     1              NPOLY =  2,  NPTS = NEL*NPOLY+1,     NXI = 1,
+     2              NEQ   = NPTS * NPDE + NV,
+     3              NWKRES= (NPOLY+1) * (5*NXI + 3*NPOLY+NEL+5+7*NPDE) +
+     4                       NPDE * 8 + 3 + NV + NXI,
+C     DDASSL TIME INTEGRATION PARAMETERS
+     5              MAXORD = 5, LRW = 40 + (MAXORD+4) * NEQ + NEQ**2,
+     6              LIW = 20 + NEQ )
+C
+        INTEGER IWORK(LIW), INFO(15), IBAND, M, ITIME, I, IDID, IRESWK,
+     1          IDEV, ITRACE
+        DOUBLE PRECISION XBK(IBK), X(NPTS), Y(NEQ), YDOT(NEQ),
+     1          WKRES(NWKRES), RWORK(LRW), XI(1), T, TOUT, RTOL, ATOL,
+     2          ENORM, GERR, VERROR, CTIME, TOL
+        EXTERNAL PDECHB, DGEJAC
+        COMMON /SDEV2/ ITRACE, IDEV
+        COMMON /PROB1/ TOL
+        TOL  = 0.1D-5/50.D0
+C N.B. CPU TIMER COMMENTED OUT FOR PORTABILITY
+C       CALL TIMER( CTIME, 1)
+        M    = 0
+        T    = TOL
+        IDEV = 4
+        ITRACE = 1
+        WRITE(IDEV,9)NPOLY, NEL
+ 9      FORMAT(' TEST PROBLEM 1'/' ***********'/' POLY OF DEGREE =',I4,
+     1         ' NO OF ELEMENTS = ',I4)
+        XI(1)  = 1.0D0
+        DO 10 I = 1,IBK
+ 10       XBK(I) = (I-1.0D0)/(IBK-1.0D0)
+C           INITIALISE THE P.D.E. WORKSPACE
+        ITIME  = 1
+        CALL INICHB(NEQ, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
+     1              ITIME, XBK, IBK, NEL, NPOLY, NV, NXI, XI, IDEV)
+        IF(ITIME .EQ. -1)THEN
+           WRITE(IDEV, 15)
+ 15        FORMAT(' INITCC ROUTINE RETURNED ITIME = -1 - RUN HALTED ')
+           GOTO 100
+        END IF
+C         SETUP DASSL PARAMETERS
+       RTOL = TOL
+       ATOL = TOL
+       DO 20 I = 1,11
+ 20      INFO(I) = 0
+C
+C         BANDED MATRIX OPTION WHEN INFO(6) = 1
+       IF(INFO(6) .EQ. 1)THEN
+          IWORK(1) = IBAND
+          IWORK(2) = IBAND
+       END IF
+ 30    TOUT = T * 10.0D0
+       IF(TOUT .GE. 2.D0)TOUT =2.0D0
+       CALL DDASSL( PDECHB, NEQ, T, Y, YDOT, TOUT, INFO, RTOL, ATOL,
+     1              IDID, RWORK, LRW, IWORK, LIW, WKRES, IRESWK, DGEJAC)
+       IF( IDID .LT. 0 )THEN
+C          DASSL FAILED TO FINISH INTEGRATION.
+           WRITE(IDEV,40)T,IDID
+ 40        FORMAT(' AT TIME T = ',D11.3,' DASSL RETURNED IDID =',I3)
+           GOTO 100
+       ELSE
+C        DASSL INTEGRATED TO T = TOUT
+C        CALL TO POST PROCESSING HERE E.G. SPACE INTERPOLATION.
+         ITRACE = 1
+         CALL ERROR( Y, NPDE, NPTS, X, M, ENORM, GERR, T, RTOL, ATOL,
+     1               ITRACE, WKRES, NWKRES)
+         ITRACE = 0
+         VERROR  = Y(NEQ) - T
+         WRITE(IDEV,50)Y(NEQ),VERROR
+ 50      FORMAT(' MOVING BOUNDARY IS AT ',D12.4,' WITH ERROR=',D12.4)
+         IF(TOUT .LT. 1.99D0 ) GOTO 30
+       END IF
+100    CONTINUE
+C      CALL TIMER(CTIME, 2)
+       WRITE(IDEV,110)IWORK(11),IWORK(12),IWORK(13), CTIME
+110    FORMAT(' NSTEPS =',I5,' NRESID =',I5,' JAC = ',I4,' CPU=',D11.3)
+       STOP
+       END
+
+C
+       SUBROUTINE SODEFN(T, NV, V, VDOT, NPDE, NXI, XI, UI, UXI, RI,
+     1                    UTI, UTXI, VRES, IRES)
+C      ROUTINE TO PROVIDE RESIDUAL OF COUPLED ODE SYSTEM FOR THE
+C      MOVING BOUNDARY PROBLEM.
+C      NOTE HOW IRES CAN BE RESET TO COPE WIH ILLEGAL VALUES OF THE
+C           MOVING BOUNDARY POSITION V(1).
+       INTEGER NPDE, NXI, NV, IRES
+       DOUBLE PRECISION T, XI(NXI), UI(NPDE,NXI), UXI(NPDE,NXI),
+     1         RI(NPDE,NXI), UTI(NPDE,NXI), UTXI(NPDE,NXI), VRES(NV),
+     2         V(NV), VDOT(NV)
+       VRES(1) = UI(1,1)
+       IF(V(1) .LT. 0.0D0)IRES = -1
+       RETURN
+       END
+C**********************************************************************
+C EXAMPLE  PROBLEM 1
+C SOLUTION OF MOVING BOUNDARY  PROBLEM BY CO-ORDINATE TRANSFORMATION.
+C********************************************************************
+C  THIS PROBLEM IS THE ONE PHASE STEFAN PROBLEM (HOFFMAN (1977) ) SEE
+C  FURZELAND R.M. A COMPARATIVE STUDY OF NUMERICAL METHODS FOR MOVING
+C  BOUNDARY PROBLEMS. J.I.M.A. (1977) ,26, PP 411 - 429.
+C  THE PROBLEM HAS  MELTING DUE TO HEAT INPUT AT THE FIXED
+C  BOUNDARY . THE P.D.E. IS DEFINED BY THE EQUATIONS
+C         U  =  U        0 < Y < S(T) , 0.1 < T < 1
+C          T     YY
+C            U  = - EXP(T) , Y = 0
+C             Y            .
+C            U  =  0  AND  S(T) = - U   ON THE MOVING BOUNDARY Y = S(T).
+C                                    Y
+C  AND THE INITIAL SOLUTION VALUES AT T = 0.1 ARE GIVEN BY THE ANALYTIC
+C  SOLUTION
+C            U = EXP(T-Y) - 1 , S(T) = T.
+C  THE PROBLEM IS REWRITTEN BY USING THE CO-ORDINATE TRANSFORMATION
+C  GIVEN BY  X(T)  =  Y / S(T)  . THE EQUATIONS THEN READ
+C                      .
+C     S * S * U  - S * S  * X * U   =  U     , X IN (0,1).
+C              T                 X      XX
+C  WITH THE NEUMANN TYPE BOUNDARY CONDITIONS
+C                                               .
+C     U  = - EXP(T)  AT X=0  AND  U  = - S(T) * S(T) AT X = 1
+C      X                           X
+C  AND THE O.D.E. COUPLING POINT EQUATION AT X = 1 WHICH IMPLICITLY
+C  DEFINES S(T) IS GIVEN  BY
+C     U(1,T) = 0
+C  THE EXACT SOLUTION IS NOW DEFINED BY
+C     U(X,T) = EXP((T - X*S(T))  , S(T) = T
+C
+C WE SHALL NOW DETAIL THE ROUTINES NEEDED TO DESCRIBE THIS PROBLEM.
+C        PROBLEM DESCRIPTION ROUTINES
+C       ******************************
+C EXACT SOLUTION
+       SUBROUTINE EXACT( TIME, NPDE, NPTS, X, U)
+C      ROUTINE FOR P.D.E. EXACT VALUES  (IF KNOWN)
+       INTEGER NPDE, NPTS
+       DOUBLE PRECISION X(NPTS), U(NPDE,NPTS), TIME
+       DO 10 I = 1,NPTS
+ 10       U(1,I) = DEXP( TIME * (1 - X(I))) - 1.0D0
+       RETURN
+       END
+       SUBROUTINE UVINIT( NPDE, NPTS, X, U, NV, V)
+C      ROUTINE FOR O.D.E. AND P.D.E. INITIAL VALUES.
+       INTEGER NPDE, NPTS, NV
+       DOUBLE PRECISION X(NPTS), U(NPDE,NPTS), TIME, V(NV)
+       COMMON /PROB1/ TOL
+       TIME= TOL
+       V(1)= TOL
+       CALL EXACT(TIME,NPDE,NPTS,X,U)
+       RETURN
+       END
+C
+       SUBROUTINE SPDEFN(T, X, NPTL, NPDE, U, DUDX, UDOT, UTDX, Q, R,
+     1                   NV, V, VDOT, IRES)
+C      PROBLEM INTERFACE  FOR THE MOVING BOUNDARY PROBLEM.
+       INTEGER NPTL, NPDE, NV, I, IRES
+       DOUBLE PRECISION X(NPTL), U(NPDE,NPTL), DUDX(NPDE,NPTL), T,
+     1         V(1), VDOT(1), Q(NPDE,NPTL) ,R(NPDE,NPTL),
+     2         UDOT(NPDE,NPTL), UTDX(NPDE,NPTL)
+       DO 10 I = 1,NPTL
+          R(1,I) = DUDX(1,I)
+          Q(1,I) = V(1)*V(1)*UDOT(1,I) -X(I)*VDOT(1)*DUDX(1,I) * V(1)
+ 10    CONTINUE
+       RETURN
+       END
+       SUBROUTINE SBNDR( T, BETA, GAMMA, U, UX, UDOT, UTDX, NPDE,
+     1                   LEFT, NV, V, VDOT, IRES)
+C  THIS SUBROUTINE PROVIDES THE LEFT AND RIGHT BOUNDARY VALUES
+C  FOR THE MOVING BOUNDARY PROBLEM IN THE FORM.
+C           BETA(I) * DU/DX(I) = GAMMA(I)
+C  WHERE I = 1,NPDE AND GAMMA IS A FUNCTION OF U,X AND T
+C
+       INTEGER NPDE, NV, IRES
+       LOGICAL LEFT
+       DOUBLE PRECISION BETA(NPDE), GAMMA(NPDE), U(NPDE), UX(NPDE)
+     -                  ,T, V(1), VDOT(1), UDOT(NPDE), UTDX(NPDE)
+       BETA(1) = 1.0D0
+       IF(LEFT)THEN
+          GAMMA(1) = -V(1)*DEXP(T)
+       ELSE
+          GAMMA(1) = -V(1)*VDOT(1)
+       END IF
+       RETURN
+       END
