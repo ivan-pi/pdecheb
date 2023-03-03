@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 
 project(pdecheb
     VERSION 1.0.0
@@ -21,7 +21,7 @@ add_library(dassl
     dassl/scherr.f
     dassl/xerrwv.f)
 target_link_libraries(dassl PRIVATE linpack)
-target_compile_options(dassl PRIVATE "-std=legacy")
+target_compile_options(dassl PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
 add_library(pdecheb
     pdecheb/chintr.f
@@ -34,4 +34,4 @@ add_library(pdecheb
     pdecheb/intrch.f
     pdecheb/pdechb.f)
 
-target_compile_options(pdecheb PRIVATE "-std=legacy")
+target_compile_options(pdecheb PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
