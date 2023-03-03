@@ -36,23 +36,23 @@ add_library(pdecheb
 
 target_compile_options(pdecheb PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
-add_executable(ex1 examples/example1.f)
+add_executable(ex1 examples/example1.f examples/dgejac.f)
 target_link_libraries(ex1 pdecheb dassl)
 target_compile_options(ex1 PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
-add_executable(ex2 examples/example2.f)
+add_executable(ex2 examples/example2.f examples/dgejac.f)
 target_link_libraries(ex2 pdecheb dassl)
 target_compile_options(ex2 PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
-add_executable(ex3 examples/example3.f)
+add_executable(ex3 examples/example3.f examples/dgejac.f)
 target_link_libraries(ex3 pdecheb dassl)
 target_compile_options(ex3 PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
 
-add_executable(ex4 examples/example4.f)
+add_executable(ex4 examples/example4.f examples/dgejac.f)
 target_link_libraries(ex4 pdecheb dassl)
 target_compile_options(ex4 PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
-add_executable(ex5 examples/example5.f)
+add_executable(ex5 examples/example5.f examples/dgejac.f)
 target_link_libraries(ex5 pdecheb dassl)
 target_compile_options(ex5 PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
