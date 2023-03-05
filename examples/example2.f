@@ -1,3 +1,21 @@
+C EXAMPLE PROBLEM TWO
+C ********************
+C     THIS PROBLEM IS DEFINED BY
+C             -2    2               2
+C     U U  = X   ( X  U U  )   + 5 U  + 4 X U U     ,  X IN (0,1)
+C        T                X  X                 X
+C
+C     THE LEFT BOUNDARY CONDITION AT X = 0 (LEFT = .TRUE. ) IS GIVEN BY
+C        U (0,T)  = 0.0
+C         X
+C     THE RIGHT BOUNDARY CONDITION IS  (LEFT = .FALSE.)
+C         U( 1,T) = EXP ( -T )
+C
+C      THE INITIAL CONDITION IS GIVEN BY THE EXACT SOLUTION ;
+C        U( X, T )  = EXP ( 1 - X*X - T )  , X IN ( 0,1)
+C                            2
+C**********************************************************************
+Y
 C     C0 COLLOCATION PARAMETERS
         PARAMETER ( IBK   =  2, NEL  = IBK-1 , NPDE = 1, NV = 0,
      1              NPOLY = 10, NPTS = NEL*NPOLY+1,     NXI = 0,
@@ -11,7 +29,7 @@ C     DDASSL TIME INTEGRATION PARAMETERS
      6              LIW = 20 + NEQ )
 C
         INTEGER IWORK(LIW), INFO(15), IBAND, M, ITIME, I, IDID, IRESWK,
-     1          IDEV, ITRACE
+     1          IDEV, ITRACE, NEQN
         DOUBLE PRECISION XBK(IBK), X(NPTS), Y(NEQ), YDOT(NEQ),
      1          WKRES(NWKRES), RWORK(LRW), XI(1), T, TOUT, RTOL, ATOL,
      2          ENORM, GERR, CTIME
@@ -21,7 +39,7 @@ C  CPU TIMER COMMENTED OUT FOR PORTABILITY
 C       CALL TIMER(CTIME ,1)
         M    = 2
         T    = 0.0D0
-        IDEV = 4
+        IDEV = 6
         ITRACE = 1
         WRITE(IDEV,9)NPOLY, NEL
  9      FORMAT(' TEST PROBLEM 1'/' ***********'/' POLY OF DEGREE =',I4,
@@ -30,7 +48,7 @@ C       CALL TIMER(CTIME ,1)
  10       XBK(I) =          (I-1.0D0) / (IBK - 1.0D0)
 C           INITIALISE THE P.D.E. WORKSPACE
         ITIME = 1
-        CALL INICHB(NEQ, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
+        CALL INICHB(NEQN, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
      1              ITIME, XBK, IBK, NEL, NPOLY, NV, NXI, XI, IDEV)
         IF(ITIME .EQ. -1)THEN
            WRITE(IDEV, 15)
@@ -69,24 +87,6 @@ C      CALL TIMER(CTIME, 2)
 110    FORMAT(' NSTEPS =',I5,' NRESID =',I5,' JAC = ',I4,' CPU=',D11.3)
        STOP
        END
-       
-C EXAMPLE PROBLEM TWO
-C ********************
-C     THIS PROBLEM IS DEFINED BY
-C             -2    2               2
-C     U U  = X   ( X  U U  )   + 5 U  + 4 X U U     ,  X IN (0,1)
-C        T                X  X                 X
-C
-C     THE LEFT BOUNDARY CONDITION AT X = 0 (LEFT = .TRUE. ) IS GIVEN BY
-C        U (0,T)  = 0.0
-C         X
-C     THE RIGHT BOUNDARY CONDITION IS  (LEFT = .FALSE.)
-C         U( 1,T) = EXP ( -T )
-C
-C      THE INITIAL CONDITION IS GIVEN BY THE EXACT SOLUTION ;
-C        U( X, T )  = EXP ( 1 - X*X - T )  , X IN ( 0,1)
-C                            2
-C**********************************************************************
        SUBROUTINE UVINIT( NPDE, NPTS, X, U, NV,V)
 C      ROUTINE FOR P.D.E. INITIAL VALUES.
        INTEGER NPDE, NPTS, NV

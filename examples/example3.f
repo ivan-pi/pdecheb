@@ -1,92 +1,3 @@
-c  problem 3
-C     C0 COLLOCATION PARAMETERS
-        PARAMETER ( IBK   = 3, NEL  = IBK-1 , NPDE = 1, NV = 0,
-     1              NPOLY = 6, NPTS = NEL*NPOLY+1,     NXI = 0,
-     2              NEQ   = NPTS * NPDE + NV,
-     3              NWKRES= (NPOLY+1) * (5*NXI + 3*NPOLY+NEL+5+7*NPDE) +
-     4                       NPDE * 8 + 3 + NV + NXI,
-C    3              NWKRES= 2*(NPOLY+1)*(NPOLY+NEL+2) + 2 + NV +
-C    4                       NPDE * (7 * (NPOLY+1+NXI) + 8),
-C     DDASSL TIME INTEGRATION PARAMETERS
-     5              MAXORD = 5, LRW = 40 + (MAXORD+4) * NEQ + NEQ**2,
-     6              LIW = 20 + NEQ )
-C
-        INTEGER IWORK(LIW), INFO(15), IBAND, M, ITIME, I, IDID, IRESWK,
-     1          IDEV, ITRACE, IDERIV, IFL, ITYPE
-        DOUBLE PRECISION XBK(IBK), X(NPTS), Y(NEQ), YDOT(NEQ), Z(NPTS),
-     1          WKRES(NWKRES), RWORK(LRW), XI(1), T, TOUT, RTOL, ATOL,
-     2          ENORM, GERR, CTIME, DYDX(NEQ), DYCALC(NPDE,NPTS,2)
-        EXTERNAL PDECHB, DGEJAC
-        COMMON /SDEV2/ ITRACE, IDEV
-        COMMON /PROB3/IDERIV
-C CPU TIMER COMMENTED OUT FOR PORTABILITY.
-C       CALL TIMER ( CTIME, 1)
-        M    = 0
-        T    = 0.0D0
-        IDEV = 4
-        ITRACE = 1
-        WRITE(IDEV,9)NPOLY, NEL
- 9      FORMAT(' TEST PROBLEM 3'/' ***********'/' POLY OF DEGREE =',I4,
-     1         ' NO OF ELEMENTS = ',I4)
-        DO 10 I = 1,IBK
- 10       XBK(I) = -1.0D0 + 2.0D0 * (I-1.0D0)/(IBK -1.0D0)
-C           INITIALISE THE P.D.E. WORKSPACE
-        ITIME = 1
-        CALL INICHB(NEQ, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
-     1              ITIME, XBK, IBK, NEL, NPOLY, NV, NXI, XI, IDEV)
-        IF(ITIME .EQ. -1)THEN
-           WRITE(IDEV, 15)
- 15        FORMAT(' INITCC ROUTINE RETURNED ITIME = -1 - RUN HALTED ')
-           GOTO 100
-        END IF
-C         SETUP DASSL PARAMETERS
-       RTOL = 1.0D-5
-       ATOL = 1.0D-5
-       DO 20 I = 1,11
- 20      INFO(I) = 0
-C      INFO(11)= 1
-C         BANDED MATRIX OPTION WHEN INFO(6) = 1
-       IF(INFO(6) .EQ. 1)THEN
-          IWORK(1) = IBAND
-          IWORK(2) = IBAND
-       END IF
-       T = 0.0D0
- 30    TOUT = T + 0.1D0
-       CALL DDASSL( PDECHB, NEQ, T, Y, YDOT, TOUT, INFO, RTOL, ATOL,
-     1              IDID, RWORK, LRW, IWORK, LIW, WKRES, IRESWK, DGEJAC)
-       IF( IDID .LT. 0 )THEN
-C          DASSL FAILED TO FINISH INTEGRATION.
-           WRITE(IDEV,40)T,IDID
- 40        FORMAT(' AT TIME T = ',D11.3,' DASSL RETURNED IDID =',I3)
-           GOTO 100
-       ELSE
-C        DASSL INTEGRATED TO T = TOUT
-C        CALL TO POST PROCESSING HERE E.G. SPACE INTERPOLATION.
-         IDERIV = 0
-         CALL ERROR( Y, NPDE, NPTS, X, M, ENORM, GERR, T, RTOL, ATOL,
-     1               ITRACE, WKRES, NWKRES)
-         IFL   = 0
-         ITYPE = 2
-         DO 45 I = 1,NPTS
-45         Z(I) = X(I)
-         CALL INTERC(Z,DYCALC,NPTS,Y,NEQ,NPDE,IFL,ITYPE,WKRES,NWKRES)
-         IDERIV = 1
-         CALL EXACT(T, NPDE, NPTS, X, DYDX)
-         DO 50 I = 1,NPTS
-          GERRDX = ABS( DYDX(I) - DYCALC(1,I,2))
-          WRITE(IDEV,49)X(I),DYDX(I),DYCALC(1,I,2),GERRDX
- 49       FORMAT(' X =',D11.3,' TRUE = ',D11.3,' CALC= ',D11.3,' ERR=',
-     1           D11.3)
- 50      CONTINUE
-         IF(TOUT .LT. 0.99D0 ) GOTO 30
-       END IF
-100    CONTINUE
-C      CALL TIMER(CTIME, 2)
-       WRITE(IDEV,110)IWORK(11),IWORK(12),IWORK(13), CTIME
-110    FORMAT(' NSTEPS =',I5,' NRESID =',I5,' JAC = ',I4,' CPU=',D11.3)
-       STOP
-       END
-       
 C EXAMPLE PROBLEM THREE
 C *********************
 C     THIS PROBLEM IS DEFINED BY
@@ -193,3 +104,92 @@ C      ROUTINE FOR P.D.E. EXACT VALUES  (IF KNOWN)
        END IF
        RETURN
        END
+C
+C     C0 COLLOCATION PARAMETERS
+        PARAMETER ( IBK   = 3, NEL  = IBK-1 , NPDE = 1, NV = 0,
+     1              NPOLY = 6, NPTS = NEL*NPOLY+1,     NXI = 0,
+     2              NEQ   = NPTS * NPDE + NV,
+     3              NWKRES= (NPOLY+1) * (5*NXI + 3*NPOLY+NEL+5+7*NPDE) +
+     4                       NPDE * 8 + 3 + NV + NXI,
+C    3              NWKRES= 2*(NPOLY+1)*(NPOLY+NEL+2) + 2 + NV +
+C    4                       NPDE * (7 * (NPOLY+1+NXI) + 8),
+C     DDASSL TIME INTEGRATION PARAMETERS
+     5              MAXORD = 5, LRW = 40 + (MAXORD+4) * NEQ + NEQ**2,
+     6              LIW = 20 + NEQ )
+C
+        INTEGER IWORK(LIW), INFO(15), IBAND, M, ITIME, I, IDID, IRESWK,
+     1          IDEV, ITRACE, IDERIV, IFL, ITYPE, NEQN
+        DOUBLE PRECISION XBK(IBK), X(NPTS), Y(NEQ), YDOT(NEQ), Z(NPTS),
+     1          WKRES(NWKRES), RWORK(LRW), XI(1), T, TOUT, RTOL, ATOL,
+     2          ENORM, GERR, CTIME, DYDX(NEQ), DYCALC(NPDE,NPTS,2)
+        EXTERNAL PDECHB, DGEJAC
+        COMMON /SDEV2/ ITRACE, IDEV
+        COMMON /PROB3/IDERIV
+C CPU TIMER COMMENTED OUT FOR PORTABILITY.
+C       CALL TIMER ( CTIME, 1)
+        M    = 0
+        T    = 0.0D0
+        IDEV = 6
+        ITRACE = 1
+        WRITE(IDEV,9)NPOLY, NEL
+ 9      FORMAT(' TEST PROBLEM 3'/' ***********'/' POLY OF DEGREE =',I4,
+     1         ' NO OF ELEMENTS = ',I4)
+        DO 10 I = 1,IBK
+ 10       XBK(I) = -1.0D0 + 2.0D0 * (I-1.0D0)/(IBK -1.0D0)
+C           INITIALISE THE P.D.E. WORKSPACE
+        ITIME = 1
+        CALL INICHB(NEQN, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
+     1              ITIME, XBK, IBK, NEL, NPOLY, NV, NXI, XI, IDEV)
+        IF(ITIME .EQ. -1)THEN
+           WRITE(IDEV, 15)
+ 15        FORMAT(' INITCC ROUTINE RETURNED ITIME = -1 - RUN HALTED ')
+           GOTO 100
+        END IF
+C         SETUP DASSL PARAMETERS
+       RTOL = 1.0D-5
+       ATOL = 1.0D-5
+       DO 20 I = 1,11
+ 20      INFO(I) = 0
+C      INFO(11)= 1
+C         BANDED MATRIX OPTION WHEN INFO(6) = 1
+       IF(INFO(6) .EQ. 1)THEN
+          IWORK(1) = IBAND
+          IWORK(2) = IBAND
+       END IF
+       T = 0.0D0
+ 30    TOUT = T + 0.1D0
+       CALL DDASSL( PDECHB, NEQ, T, Y, YDOT, TOUT, INFO, RTOL, ATOL,
+     1              IDID, RWORK, LRW, IWORK, LIW, WKRES, IRESWK, DGEJAC)
+       IF( IDID .LT. 0 )THEN
+C          DASSL FAILED TO FINISH INTEGRATION.
+           WRITE(IDEV,40)T,IDID
+ 40        FORMAT(' AT TIME T = ',D11.3,' DASSL RETURNED IDID =',I3)
+           GOTO 100
+       ELSE
+C        DASSL INTEGRATED TO T = TOUT
+C        CALL TO POST PROCESSING HERE E.G. SPACE INTERPOLATION.
+         IDERIV = 0
+         CALL ERROR( Y, NPDE, NPTS, X, M, ENORM, GERR, T, RTOL, ATOL,
+     1               ITRACE, WKRES, NWKRES)
+         IFL   = 0
+         ITYPE = 2
+         DO 45 I = 1,NPTS
+45         Z(I) = X(I)
+         CALL INTERC(Z,DYCALC,NPTS,Y,NEQ,NPDE,IFL,ITYPE,WKRES,NWKRES)
+         IDERIV = 1
+         CALL EXACT(T, NPDE, NPTS, X, DYDX)
+         DO 50 I = 1,NPTS
+          GERRDX = ABS( DYDX(I) - DYCALC(1,I,2))
+          WRITE(IDEV,49)X(I),DYDX(I),DYCALC(1,I,2),GERRDX
+ 49       FORMAT(' X =',D11.3,' TRUE = ',D11.3,' CALC= ',D11.3,' ERR=',
+     1           D11.3)
+ 50      CONTINUE
+         IF(TOUT .LT. 0.99D0 ) GOTO 30
+       END IF
+100    CONTINUE
+C      CALL TIMER(CTIME, 2)
+       WRITE(IDEV,110)IWORK(11),IWORK(12),IWORK(13), CTIME
+110    FORMAT(' NSTEPS =',I5,' NRESID =',I5,' JAC = ',I4,' CPU=',D11.3)
+       STOP
+       END
+       

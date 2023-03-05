@@ -12,8 +12,8 @@ C  T               CURRENT TIME INTEGRATION LEVEL , > 0.0
 C  U(N)            CURRENT SOLUTION VECTOR
 C  RESD(N)          VECTOR WHICH WILL CONTAIN THE RESIDUAL ON EXIT
 C  UDOT(N)         CURRENT ESTIMATE OF DU/DT
-C  WK(1)           REAL WORKSPACE - DEFINED IN INICHB
-C  IWK(1)          INTEGER WORKSPACE - NOT USED HERE.
+C  WK(*)           REAL WORKSPACE - DEFINED IN INICHB
+C  IWK(*)          INTEGER WORKSPACE - NOT USED HERE.
 C  IRES            INDICATOR FOR DASSL FROM RESIDUAL ROUTINE.
 C                  ON EXIT = -1 THEN ILLEGAL SOLUTION VALUES HAVE BEEN
 C                               FOUND .
@@ -21,30 +21,30 @@ C                           =-2 DASSL SHOULD HALT THE INTEGRATION.
 C
 C  ONLY  RESD(N) IS ALTERED ON EXIT : IT CONTAINS THE CURRENT RESIDUAL
 C***********************************************************************
+      USE PDECHEB_COMMON, ONLY: DP,
+C COMMON /DISCHK/
+     *    PDCODE,
+C COMMON /SCHSZ/
+     *    I2, I3, I4, I5, I6, I7, I8, I9, I10,
+     *    I10A, I10B, I11, I11A, I11B, I12, I13, I14, I15, 
+     *    I16, I17, I18, I19,
+C COMMON /SCHSZ1/
+     *    NEL, NPDE, NPTL, NPTS, M, NV, NXI, NVST
+     *
+      IMPLICIT NONE
 C     .. Scalar Arguments ..
-      DOUBLE PRECISION  T
-      INTEGER           IRES
+      REAL(DP), INTENT(IN) :: T
+      INTEGER, INTENT(INOUT) :: IRES
 C     .. Array Arguments ..
-      DOUBLE PRECISION  RESD(1), U(1), UDOT(1), WK(1)
-      INTEGER           IWK(1)
-C     .. Scalars in Common ..
-      INTEGER           I10, I10A, I10B, I11, I11A, I11B, I12, I13, I14,
-     *                  I15, I16, I17, I18, I19, I2, I3, I4, I5, I6, I7,
-     *                  I8, I9, M, NEL, NPDE, NPTL, NPTS, NV, NVST, NXI
-      CHARACTER*6       PDCODE
+      REAL(DP), INTENT(IN) :: U(*), UDOT(*)
+      REAL(DP), INTENT(OUT) :: RESD(*)
+      REAL(DP), INTENT(INOUT) :: WK(*)
+      INTEGER, INTENT(INOUT) :: IWK(*)
 C     .. Local Scalars ..
       INTEGER           I, IBK, IFL, IR, ITYPE, IV, J, N
-      CHARACTER*240     ERRMSG
+      CHARACTER(240)    ERRMSG
 C     .. External Subroutines ..
       EXTERNAL          CHINTR, CRES, DRES, SCHERR, SODEFN
-C     .. Common blocks ..
-      COMMON            /DISCHK/PDCODE
-      COMMON            /SCHSZ/I2, I3, I4, I5, I6, I7, I8, I9, I10,
-     *                  I10A, I10B, I11, I11A, I11B, I12, I13, I14, I15,
-     *                  I16, I17, I18, I19
-      COMMON            /SCHSZ1/NEL, NPTL, NPDE, NPTS, M, NV, NXI, NVST
-C     .. Save statement ..
-      SAVE              /SCHSZ1/, /SCHSZ/, /DISCHK/
 C     .. Executable Statements ..
 C
       IF (PDCODE.NE.'C0CHEB') THEN
@@ -59,9 +59,9 @@ C
       IR = 1
       IRES = 1
       N = NPDE*NPTS + NV
-      DO 20 J = 1, N
+      DO J = 1, N
          RESD(J) = 0.0D0
-   20 CONTINUE
+      END DO
       IBK = NEL + 1
       IV = NPTS*NPDE
       IF (NV.GT.0) THEN
@@ -101,9 +101,9 @@ C        LINEAR BASIS FUNCTION VERSION.
      *             WK(I12),IRES,WK(I10A),WK(I11A),WK(I11B),WK(I10B),NV,
      *             U(IV),UDOT(IV),WK(I19))
       END IF
-      DO 40 I = 1, N
+      DO I = 1, N
          RESD(I) = -RESD(I)
-   40 CONTINUE
+      END DO
       IF (IRES.NE.1) THEN
          IR = IRES
          GO TO 60

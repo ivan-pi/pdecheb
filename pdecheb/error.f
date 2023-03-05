@@ -51,13 +51,13 @@ C                 THE D.A.E.FUNCTION CALL ROUTINE  RESID
 C                 SEE BELOW FOR A DETAILED DESCRIPTION.(INPUT)
 C
 C***********************************************************************
+      use pdecheb_common, only: idev
+      implicit none
 C     .. Scalar Arguments ..
       DOUBLE PRECISION ABSERR, ENORM, GERR, RELERR, T
       INTEGER          ITRACE, IWK, M, NPDE, NPTS
 C     .. Array Arguments ..
       DOUBLE PRECISION RWK(IWK), U(NPDE,NPTS), X(NPTS)
-C     .. Scalars in Common ..
-      INTEGER          IDEV
 C     .. Local Scalars ..
       DOUBLE PRECISION EABS, EPS, ER, EREL, HH, WS
       INTEGER          I, IFLAG, IN, IONE, JI, NEQ, NP
@@ -66,24 +66,20 @@ C     .. Local Arrays ..
 C     .. External Subroutines ..
       EXTERNAL         EXACT, INTERC
 C     .. Intrinsic Functions ..
-      INTRINSIC        DABS, DMAX1, DSQRT
-C     .. Common blocks ..
-      COMMON           /SCHSZ2/IDEV
-C     .. Save statement ..
-      SAVE             /SCHSZ2/
+      INTRINSIC        ABS, MAX, SQRT
 C     .. Executable Statements ..
       IONE = 1
 C
 C   SET UP L2 NORM WEIGHTS AND ESTIMATE NORM USING NP POINTS
 C
-      EPS = DMAX1(RELERR,ABSERR)
+      EPS = MAX(RELERR,ABSERR)
       IF (EPS.LE.0.0) RETURN
       EREL = RELERR/EPS
       EABS = ABSERR/EPS
       DO 40 IN = 1, NPDE
          WX(IN) = 0.0D0
          DO 20 I = 1, NPTS
-            EPS = DABS(U(IN,I))
+            EPS = ABS(U(IN,I))
             IF (WX(IN).LT.EPS) WX(IN) = EPS
    20    CONTINUE
          WX(IN) = WX(IN)*EREL + EABS
@@ -104,7 +100,7 @@ C
          CALL EXACT(T,NPDE,IONE,XP(I),UN)
          IF (M.NE.0) WS = XP(I)**M
          DO 100 IN = 1, NPDE
-            ER = DABS(US(JI)-UN(IN))
+            ER = ABS(US(JI)-UN(IN))
             ERR(IN) = ERR(IN) + WS*ER**2
             JI = JI + 1
   100    CONTINUE
@@ -113,7 +109,7 @@ C
       DO 140 IN = 1, NPDE
          ENORM = ENORM + ERR(IN)/WX(IN)**2
   140 CONTINUE
-      ENORM = DSQRT(ENORM*HH)
+      ENORM = SQRT(ENORM*HH)
 C
 C       COMPUTE THE MAXIMUM ERROR AT THE GRID POINTS
 C
@@ -122,7 +118,7 @@ C
       DO 180 I = 1, NPTS
          CALL EXACT(T,NPDE,IONE,X(I),UN)
          DO 160 IN = 1, NPDE
-            ER = DABS(U(IN,I)-UN(IN))
+            ER = ABS(U(IN,I)-UN(IN))
             IF (ITRACE.GE.1) WRITE (IDEV,FMT=99998) X(I), U(IN,I),
      *          UN(IN), ER
             IF (GERR.LT.ER) GERR = ER

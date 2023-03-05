@@ -35,33 +35,29 @@ C
 C        WK(IWK) THE WORKSPACE USED BY THE CHEBYSHEV METHOD. THIS
 C                MUST BE THE WORKSPACE INITIALISED BY INICHB.
 C**********************************************************************
+C COMMON /DISCHK/
+      USE PDECHEB_COMMON, ONLY: PDCODE
+C COMMON /SCHSZ/
+C     COMMON            /SCHSZ/IA, I5, IB, I9, I10, IC, I11, ID, I19
+      USE PDECHEB_COMMON, ONLY: IA, I5, IB, I9, I10, IC, I11, ID, I19
+C COMMON /SCHSZ1/
+      USE PDECHEB_COMMON, ONLY: NEL, NPTL, NNPDE => NPDE, NNPTS => NPTS,
+     *    MM => M, NV, NXI, NVST
+C COMMON /SCHSZ3/
+      USE PDECHEB_COMMON, ONLY: TWOU
+      IMPLICIT NONE
 C     .. Scalar Arguments ..
       INTEGER           IFLAG, ITYPE, IWK, NEQ, NP, NPDE
 C     .. Array Arguments ..
       DOUBLE PRECISION  U(NEQ), UP(NPDE,NP,ITYPE), WK(IWK), XP(NP)
-C     .. Scalars in Common ..
-      DOUBLE PRECISION  TWOU
-      INTEGER           I10, I11, I19, I5, I9, MM, NEL, NNPDE, NNPTS,
-     *                  NPTL, NV, NVST, NXI
-      CHARACTER*6       PDCODE
-C     .. Arrays in Common ..
-      INTEGER           IA(3), IB(3), IC(2), ID(9)
 C     .. Local Scalars ..
       DOUBLE PRECISION  TEMP
       INTEGER           I, IBK, J, K, NPTS
-      CHARACTER*240     ERRMSG
+      CHARACTER(240)    ERRMSG
 C     .. External Subroutines ..
       EXTERNAL          INTRCH, SCHERR
 C     .. Intrinsic Functions ..
-      INTRINSIC         DABS
-C     .. Common blocks ..
-      COMMON            /DISCHK/PDCODE
-      COMMON            /SCHSZ/IA, I5, IB, I9, I10, IC, I11, ID, I19
-      COMMON            /SCHSZ1/NEL, NPTL, NNPDE, NNPTS, MM, NV, NXI,
-     *                  NVST
-      COMMON            /SCHSZ3/TWOU
-C     .. Save statement ..
-      SAVE              /SCHSZ1/, /SCHSZ/, /DISCHK/, /SCHSZ3/
+      INTRINSIC         ABS
 C     .. Executable Statements ..
       IF (PDCODE.NE.'C0CHEB') THEN
          IFLAG = 1
@@ -96,7 +92,7 @@ C
       IF (ITYPE.GE.2 .AND. IBK.GT.2) THEN
          DO 60 I = 1, NP
             DO 40 J = 2, NEL
-               TEMP = DABS(XP(I)-WK(I5-1+J))
+               TEMP = ABS(XP(I)-WK(I5-1+J))
                IF (TEMP.LE.TWOU) THEN
                   K = I5 + J - 1
                   ERRMSG =

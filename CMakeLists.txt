@@ -4,26 +4,27 @@ cmake_minimum_required(VERSION 3.14)
 project(pdecheb
     VERSION 1.0.0
     LANGUAGES Fortran
-    DESCRIPTION "PDECHEB Package")
+    DESCRIPTION "ACM TOMS Algorithm 690 - PDECHEB")
 
 add_library(linpack linpack/linpack.f)
 
-add_library(dassl
-    dassl/ddaini.f
-    dassl/ddajac.f
-    dassl/ddanrm.f
-    dassl/ddaslv.f
-    dassl/ddassl.f
-    dassl/ddastp.f
-    dassl/ddatrp.f
-    dassl/ddawts.f
-    dassl/s88fmt.f
-    dassl/scherr.f
-    dassl/xerrwv.f)
+add_library(dassl ddassl.f)
+#    dassl/ddaini.f
+#    dassl/ddajac.f
+#    dassl/ddanrm.f
+#    dassl/ddaslv.f
+#    dassl/ddassl.f
+#    dassl/ddastp.f
+#    dassl/ddatrp.f
+#    dassl/ddawts.f
+#    dassl/s88fmt.f
+#    dassl/xerrwv.f)
+
 target_link_libraries(dassl PRIVATE linpack)
 target_compile_options(dassl PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
 add_library(pdecheb
+    pdecheb/pdecheb_common.f90
     pdecheb/chintr.f
     pdecheb/cres.f
     pdecheb/cset.f
@@ -32,13 +33,11 @@ add_library(pdecheb
     pdecheb/inichb.f
     pdecheb/interc.f
     pdecheb/intrch.f
-    pdecheb/pdechb.f)
-
-target_compile_options(pdecheb PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
+    pdecheb/pdechb.f
+    pdecheb/scherr.f)
 
 add_executable(ex1 examples/example1.f examples/dgejac.f)
 target_link_libraries(ex1 pdecheb dassl)
-target_compile_options(ex1 PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
 add_executable(ex2 examples/example2.f examples/dgejac.f)
 target_link_libraries(ex2 pdecheb dassl)
@@ -47,7 +46,6 @@ target_compile_options(ex2 PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 add_executable(ex3 examples/example3.f examples/dgejac.f)
 target_link_libraries(ex3 pdecheb dassl)
 target_compile_options(ex3 PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
-
 
 add_executable(ex4 examples/example4.f examples/dgejac.f)
 target_link_libraries(ex4 pdecheb dassl)

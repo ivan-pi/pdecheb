@@ -16,7 +16,7 @@ C     DDASSL TIME INTEGRATION PARAMETERS
      6              LIW = 20 + NEQ )
 C
         INTEGER IWORK(LIW), INFO(15), IBAND, M, ITIME, I, IDID,
-     1          IDEV, ITRACE, GRNPTS, IFL, NOUT, KTIME, ITYPE
+     1          IDEV, ITRACE, GRNPTS, IFL, NOUT, KTIME, ITYPE, NEQN
         DOUBLE PRECISION XBK(IBK), X(NPTS), Y(NEQ), YDOT(NEQ), TINC(11),
      1          WKRES(NWKRES), RWORK(LRW), XI(NXI), T, TOUT, RTOL, ATOL,
      2          U0,VM,DTX1,DTX2,DM1,DM2,K,SCM,PE,MW,RHO,RT,Q3
@@ -27,7 +27,7 @@ C
 C       COMMON BLOCKS  TO PASS ACROSS PROBLEM DEPENDENT CONSTANTS.
         COMMON /C0/     PE,MW,RHO,RT,W
         COMMON /PDES/   U0,VM,DTX1,DTX2,DM1,DM2,K
-        COMMON /SDEV2/ ITRACE, IDEV
+        COMMON /SDEV2/  ITRACE, IDEV
 C IBM CALL TO SWITCH OFF UNDERFLOW COMMENTED OUT
 C       CALL ERRSET(208, 256, -1, -1, 0)
 C CPU TIMER COMMENTED OUT FOR  PORTABILITY
@@ -46,13 +46,14 @@ C       CALL TIMER (CPU, 1)
         DTX2 = U0*K
         W = 0.25D0
         GRNPTS = 1
+        IDEV=6
         WRITE(IDEV,9)NPOLY, NEL
  9      FORMAT(' TEST PROBLEM 4'/' ***********'/' POLY OF DEGREE =',I4,
      1         ' NO OF ELEMENTS = ',I4)
          RTOL = 0.1D-4
          ATOL = 0.1D-4
          ITRACE = 0
-         IDEV = 4
+         IDEV = 6
          WRITE(IDEV,104)RTOL, ATOL, ITRACE, IDEV
 104      FORMAT(//' RTOL=',D12.3,' ATOL=',D12.3,' ITRACE AND IDEV=',2I4)
 C
@@ -102,12 +103,12 @@ C
           XBK(8) = 1.0D0
           ITIME = 1
 C           INITIALISE THE P.D.E. WORKSPACE
-        CALL INICHB(NEQ, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
+        CALL INICHB(NEQN, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
      1              ITIME, XBK, IBK, NEL, NPOLY, NV, NXI, XI, IDEV)
         DO 292 I = 1,NPTS
 C            FINAL VALUES OF XI
  292       XI(I) = X(I)
-        CALL INICHB(NEQ, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
+        CALL INICHB(NEQN, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
      1              ITIME, XBK, IBK, NEL, NPOLY, NV, NXI, XI, IDEV)
         IF(ITIME .EQ. -1)THEN
            WRITE(IDEV, 15)
@@ -312,38 +313,43 @@ C      BOUNDARY CONDITIONS ROUTINE
       SUBROUTINE SODEFN(T, NV, V, VDOT, NPDE, NXI, X, Y, UXI, RI,
      1                  UTI, UTXI, VRES, IRES)
 C ROUTINE FOR AUXILIARY O.D.E.S (IF ANY) IN MASTER EQN. FORM (4.3)
-      INTEGER NPDE, NXI, NV, IRES, NPTL, L, J, I
+      USE PDECHEB_COMMON, ONLY: 
+C COMMON /SCHSZ6/
+     *  CCRULE, 
+C COMMON /SCHSZ5/
+     *  NPTL=>NNNPTL 
+      INTEGER NPDE, NXI, NV, IRES, L, J, I
       DOUBLE PRECISION T, X(NXI), Y(NXI), UXI(NPDE,NXI),
      1        RI(NPDE,NXI), UTI(NPDE,NXI), UTXI(NPDE,NXI), VRES(NV),
      2        V(3), VDOT(3), PE,MW,RHO,RT,W,U0,VM,DTX1,DTX2,DM2,K
-     3       ,DM1, Q2, H, CCRULE
+     3       ,DM1, Q2, H
       COMMON  /C0/     PE,MW,RHO,RT,W
       COMMON  /PDES/   U0,VM,DTX1,DTX2,DM1,DM2,K
-      COMMON  /SCHSZ5/ NPTL
-      COMMON  /SCHSZ6/ CCRULE(50)
-C
+
       VRES(1) = VDOT(1) + W*RHO*DM1*UXI(1,1)
       Q2 = 0.0D0
-      DO 3 I = 1,2
+      DO I = 1,2
         J = (NPTL-1) * (I-1) + 1
         L = (NPTL-1) *  I    + 1
         H = ( X(L) - X(J)) * 0.5D0
-      DO 3 II = 1,NPTL
-         IK = J + II - 1
-C        CLENSHAW - CURTIS QUADRATURE UP TO INTERFACE POINT.
-         Q2 = Q2 + (W*RHO*U0**2)/VM * X(IK) * Y(IK) * CCRULE(II) * H
- 3    CONTINUE
+        DO II = 1,NPTL
+          IK = J + II - 1
+C         CLENSHAW - CURTIS QUADRATURE UP TO INTERFACE POINT.
+          Q2 = Q2 + (W*RHO*U0**2)/VM * X(IK) * Y(IK) * CCRULE(II) * H
+        END DO
+      END DO
 C
 C        CLENSHAW - CURTIS QUADRATURE BEYOND THE INTERFACE POINT.
-      DO 5 I = 3,7
+      DO I = 3,7
         J = (NPTL-1) * (I-1) + 1
         L = (NPTL-1) *  I    + 1
         H = ( X(L) - X(J)) * 0.5D0
-        DO 5 II = 1, NPTL
-         IK = J + II - 1
-         Q2=Q2 + H* ((U0/K)*DLOG(U0*X(IK)/VM)+5.1*U0) * Y(IK)*CCRULE(II)
-     1            * W * RHO
-  5   CONTINUE
+        DO II = 1, NPTL
+          IK = J + II - 1
+          Q2=Q2 + H*((U0/K)*DLOG(U0*X(IK)/VM)+5.1*U0) * Y(IK)*CCRULE(II)
+     1             * W * RHO
+        END DO
+      END DO
       VRES(2) = V(2) - Q2
       VRES(3) = V(3) - (V(2)-V(1))
       RETURN

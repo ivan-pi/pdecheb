@@ -45,6 +45,9 @@ C         COULD ALSO BE USED. INTERPOLATION IS USED TO PROVIDE THOSE
 C         SOLUTION VALUES IN THE ELEMENT (USING CLENSHAWS ALGORITHM).
 C
 C***********************************************************************
+C COMMON /SCHSZ3/
+      USE PDECHEB_COMMON, ONLY: TWOU
+      IMPLICIT NONE
 C     .. Scalar Arguments ..
       DOUBLE PRECISION  T
       INTEGER           IBK, IFLAG, IR, ITYPE, NEL, NP, NPDE, NPTL,
@@ -52,23 +55,17 @@ C     .. Scalar Arguments ..
 C     .. Array Arguments ..
       DOUBLE PRECISION  COEFF(NPDE,NPTL,2), OMEGA(NPTL,NPTL),
      *                  RT(NPDE,NPTL,3), U(NPDE,NPTS), UP(NPDE,NP,*),
-     *                  V(1), VDOT(1), XBK(IBK), XP(NP)
-C     .. Scalars in Common ..
-      DOUBLE PRECISION  TWOU
+     *                  V(*), VDOT(*), XBK(IBK), XP(NP)
 C     .. Local Scalars ..
       DOUBLE PRECISION  AL, BR, BR1, BR2, TEM, TEM1
       INTEGER           I, II, IONE, IP, IP1, IX, IY, IZ, J, K, NM1
-      CHARACTER*240     ERRMSG
+      CHARACTER(240)    ERRMSG
 C     .. Local Arrays ..
       DOUBLE PRECISION  XCON(2)
 C     .. External Subroutines ..
       EXTERNAL          SCHERR, SPDEFN
 C     .. Intrinsic Functions ..
-      INTRINSIC         MIN0
-C     .. Common blocks ..
-      COMMON            /SCHSZ3/TWOU
-C     .. Save statement ..
-      SAVE              /SCHSZ3/
+      INTRINSIC         MIN
 C     .. Executable Statements ..
 C
 C  TREAT EACH ELEMENT SEPARATELY
@@ -127,7 +124,7 @@ C        FORM THE CHEBYSHEV COEFFS OF THE SPACE DERIV.
          END IF
          XCON(1) = 2.0D0/(XBK(I+1)-XBK(I))
          XCON(2) = -0.5D0*XCON(1)*(XBK(I+1)+XBK(I))
-         IY = MIN0(2,ITYPE)
+         IY = MIN(2,ITYPE)
   140    DO 200 II = 1, IY
             DO 180 K = 1, NPDE
                BR1 = 0.0D0

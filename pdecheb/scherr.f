@@ -4,23 +4,18 @@ C  ERROR HANDLING ROUTINE FOR THE DASSL  INTEGRATION PACKAGE. THIS
 C  ROUTINE IS A FORTRAN77 IMPROVED VERSION OF THE ROUTINE USED IN LSODI
 C  AND MAKES USE OF CHARACTER HANDLING FACILITIES.
 C-----------------------------------------------------------------------
+      USE PDECHEB_COMMON, ONLY: NERR=>IDEV
 C     .. Scalar Arguments ..
       DOUBLE PRECISION  R1, R2
       INTEGER           I1, I2, IERT, NI, NR
       CHARACTER*(*)     MSG
-C     .. Scalars in Common ..
-      INTEGER           NERR
 C     .. Local Scalars ..
       INTEGER           I, IL, IT, J, K, KP1, LWORD
-      CHARACTER*(240)   MSG1
+      CHARACTER(240)    MSG1
 C     .. Local Arrays ..
-      CHARACTER*(60)    MSGOUT(5)
+      CHARACTER(60)     MSGOUT(5)
 C     .. Intrinsic Functions ..
-      INTRINSIC         LEN, MIN0
-C     .. Common blocks ..
-      COMMON            /SCHSZ2/NERR
-C     .. Save statement ..
-      SAVE              /SCHSZ2/
+      INTRINSIC         LEN, MIN
 C     .. Executable Statements ..
 C-----------------------------------------------------------------------
 C
@@ -40,7 +35,7 @@ C
 C    SET MSG1 BLANK AND GET RID OF UNNECESSARY SPACES IN ERROR MESSAGE
 C
       J = 1
-      IT = MIN0(IL,240)
+      IT = MIN(IL,240)
       DO 20 I = 1, 10
          MSG1(J:) = '                        '
          J = J + 24

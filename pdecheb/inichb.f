@@ -140,42 +140,57 @@ C
 C   THE PARAMETERS I2,...,I20  ARE DEFINED BELOW.
 C
 C**********************************************************************
+C COMMON /DISCHK/
+      USE PDECHEB_COMMON, ONLY: PDCODE
+C COMMON /SCHSZ/
+      USE PDECHEB_COMMON, ONLY: 
+     *    I2, I3, I4, I5, I6, I7, I8, I9, I10,
+     *    I10A, I10B, I11, I11A, I11B, I12, I13, I14, I15, 
+     *    I16, I17, I18, I19
+C COMMON /SCHSZ1/
+      USE PDECHEB_COMMON, ONLY: NNEL=>NEL, NNPTL=>NPTL, NNPDE=>NPDE,
+     *    NNPTS=>NPTS,MM=>M,NNV=>NV,NNXI=>NXI,NVST
+C COMMON /SCHSZ2/
+      USE PDECHEB_COMMON, ONLY: INDEV => IDEV
+C COMMON /SCHSZ3/
+      USE PDECHEB_COMMON, ONLY: TWOU
+C COMMON /SCHSZ4/
+      USE PDECHEB_COMMON, ONLY: TO, K1, K2, K3, K4, JTIMES, ILOC
+C COMMON /SCHSZ5/
+      USE PDECHEB_COMMON, ONLY: NNNPTL
+C
+      IMPLICIT NONE
+C
+      INTENT(INOUT) :: NEQN
+      INTENT(IN) :: NPDE
+      INTENT(IN) :: NPTS
+      INTENT(OUT) :: X
+      INTENT(IN) :: M
+      INTENT(OUT) :: U
+      INTENT(INOUT) :: WK
+      INTENT(IN) :: TS
+      INTENT(IN) :: XBK
+      INTENT(IN) :: NEL
+      INTENT(IN) :: NPOLY
+      INTENT(INOUT) :: ITIME
+      INTENT(IN) :: NV
+      INTENT(IN) :: NXI
+      INTENT(IN) :: XI
+      INTENT(IN) :: IDEV
 C     .. Scalar Arguments ..
       DOUBLE PRECISION  TS
       INTEGER           IBAND, IBK, IDEV, ITIME, IWK, M, NEL, NEQN,
      *                  NPDE, NPOLY, NPTS, NV, NXI
 C     .. Array Arguments ..
-      DOUBLE PRECISION  U(1), WK(IWK), X(NPTS), XBK(IBK), XI(1)
-C     .. Scalars in Common ..
-      DOUBLE PRECISION  TO, TWOU
-      INTEGER           I10, I10A, I10B, I11, I11A, I11B, I12, I13, I14,
-     *                  I15, I16, I17, I18, I19, I2, I3, I4, I5, I6, I7,
-     *                  I8, I9, ILOC, INDEV, JTIMES, K1, K2, K3, K4, MM,
-     *                  NNEL, NNNPTL, NNPDE, NNPTL, NNPTS, NNV, NNXI,
-     *                  NVST
-      CHARACTER*6       PDCODE
+      DOUBLE PRECISION  U(*), WK(IWK), X(NPTS), XBK(IBK), XI(*)
 C     .. Local Scalars ..
       DOUBLE PRECISION  TEMP, TEMP2
       INTEGER           I, I20, IBKM1, IT, IV, J, NPTL, NSQ
-      CHARACTER*240     ERRMSG
+      CHARACTER(240)    ERRMSG
 C     .. External Subroutines ..
       EXTERNAL          CSET, SCHERR
 C     .. Intrinsic Functions ..
-      INTRINSIC         DABS, DMAX1
-C     .. Common blocks ..
-      COMMON            /DISCHK/PDCODE
-      COMMON            /SCHSZ/I2, I3, I4, I5, I6, I7, I8, I9, I10,
-     *                  I10A, I10B, I11, I11A, I11B, I12, I13, I14, I15,
-     *                  I16, I17, I18, I19
-      COMMON            /SCHSZ1/NNEL, NNPTL, NNPDE, NNPTS, MM, NNV,
-     *                  NNXI, NVST
-      COMMON            /SCHSZ2/INDEV
-      COMMON            /SCHSZ3/TWOU
-      COMMON            /SCHSZ4/TO, K1, K2, K3, K4, JTIMES, ILOC
-      COMMON            /SCHSZ5/NNNPTL
-C     .. Save statement ..
-      SAVE              /SCHSZ1/, /SCHSZ/, /DISCHK/, /SCHSZ2/, /SCHSZ3/,
-     *                  /SCHSZ4/, /SCHSZ5/
+      INTRINSIC         ABS, MAX
 C     .. Executable Statements ..
       INDEV = IDEV
       IF (ITIME.LT.1 .OR. ITIME.GT.2) THEN
@@ -268,14 +283,15 @@ C     .. Executable Statements ..
 C
 C   CALCULATE ROUGH ESTIMATE OF UNIT ROUND-OFF ERROR FOR CHECKING
 C
-      TWOU = 0.1D0
-   40 TEMP = 1.0D0 + TWOU
-      IF (1.0D0.EQ.TEMP) THEN
-         TWOU = TWOU*2.0D0
-      ELSE
-         TWOU = TWOU*0.5D0
-         GO TO 40
-      END IF
+Cx      TWOU = 0.1D0
+Cx   40 TEMP = 1.0D0 + TWOU
+Cx      IF (1.0D0.EQ.TEMP) THEN
+Cx         TWOU = TWOU*2.0D0
+Cx      ELSE
+Cx         TWOU = TWOU*0.5D0
+Cx         GO TO 40
+Cx      END IF
+      TWOU = EPSILON(TWOU)
 C
 C  CHECK IF THE BREAK-POINTS MATCH THE COUPLING POINTS.
 C
@@ -283,8 +299,8 @@ C
          IBKM1 = IBK - 1
          DO 80 I = 2, IBKM1
             DO 60 J = 1, NXI
-               TEMP = DABS(XI(J)-XBK(I))
-               TEMP2 = TWOU/DMAX1(TEMP,1.0D0)
+               TEMP = ABS(XI(J)-XBK(I))
+               TEMP2 = TWOU/MAX(TEMP,1.0D0)
                IF (TEMP.LT.TEMP2) THEN
 C                 COUPLING POINT IS TOO CLOSE TO BREAK-POINT
                   ERRMSG =

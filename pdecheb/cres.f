@@ -5,34 +5,30 @@ C**********************************************************************
 C       CHEBYSHEV C0 COLLOCATION SPATIAL DISCRETISATION ROUTINE
 C       FOR POLYNOMIALS OF DEGREE 2 AND ABOVE.
 C**********************************************************************
+      use pdecheb_common, only: twou
+      implicit none
 C     .. Scalar Arguments ..
-      DOUBLE PRECISIONT
+      DOUBLE PRECISION T
       INTEGER         IRES, M, NEL, NPDE, NPTL, NPTS, NV
 C     .. Array Arguments ..
-      DOUBLE PRECISIONBETA(NPDE,4), CCR(NPTL), DU(NPTL,NPTL),
+      DOUBLE PRECISION BETA(NPDE,4), CCR(NPTL), DU(NPTL,NPTL),
      *                DUDX(NPDE,NPTL), GAMMA(NPDE,4), OMEGA(NPTL,NPTL),
      *                Q(NPDE,NPTL), QT(NPDE,NPTL), R(NPDE,NPTL),
      *                RES(NPDE,NPTS), RT(NPDE,NPTL), U(NPDE,NPTS),
      *                UDOT(NPDE,NPTS), UDT(NPDE,NPTL), UTDX(NPDE,NPTL),
-     *                V(1), VDOT(1), VDUM(1), X(NPTS), XBK(*), XC(NPTL)
-C     .. Scalars in Common ..
-      DOUBLE PRECISIONTWOU
+     *                V(*), VDOT(*), VDUM(*), X(NPTS), XBK(*), XC(NPTL)
 C     .. Local Scalars ..
-      DOUBLE PRECISIONH, MP1, SAVEL, SAVER, SFIRST
+      DOUBLE PRECISION H, MP1, SAVEL, SAVER, SFIRST
       INTEGER         I, II, IJ, IK, IV, J, JJ, JK, K, KJ, NM1
 C     .. Local Arrays ..
       INTEGER         IZ(3)
 C     .. External Subroutines ..
       EXTERNAL        SBNDR, SPDEFN
 C     .. Intrinsic Functions ..
-      INTRINSIC       MAX0, MIN0
-C     .. Common blocks ..
-      COMMON          /SCHSZ3/TWOU
-C     .. Save statement ..
-      SAVE            /SCHSZ3/
+      INTRINSIC       MAX, MIN
 C     .. Executable Statements ..
       NM1 = NPTL - 1
-      IV = MAX0(1,NV)
+      IV = MAX(1,NV)
       MP1 = 1.0D0
       DO 260 I = 1, NEL
          JJ = (I-1)*NM1
@@ -98,8 +94,8 @@ C        ---------------------------------------------------------------
 C        SET UP SAVEL AND SAVER  FOR THE BOUNDARY AND INTERFACE
 C        CONDITIONS AND FORM DRDX  BY OVERWRITING DUDX
 C        --------------------------------------------------------------
-         KJ = MAX0(2,I)
-         JK = MIN0(NEL,I+1) + 1
+         KJ = MAX(2,I)
+         JK = MIN(NEL,I+1) + 1
          SAVEL = 1.0D0/(XBK(KJ)+XBK(I+1)-XBK(KJ-1)-XBK(I))
          SAVER = 1.0D0/(XBK(JK)+XBK(I+1)-XBK(JK-1)-XBK(I))
          IF (I.EQ.1) SFIRST = SAVEL
