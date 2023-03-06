@@ -37,8 +37,8 @@ C         SOLUTION VALUES IN THE ELEMENT (USING CLENSHAWS ALGORITHM).
 C
 C***********************************************************************
 C COMMON /SCHSZ2/
-      use pdecheb_common, only: twou
-      implicit none
+      USE PDECHEB_COMMON, ONLY: TWOU
+      IMPLICIT NONE
 C     .. Scalar Arguments ..
       INTEGER           IBK, IFLAG, ITYPE, NEL, NP, NPDE, NPTL, NPTS
 C     .. Array Arguments ..
@@ -64,7 +64,7 @@ C
       IP = 0
       NM1 = NPTL - 1
       IZ = 0
-      DO 240 I = 1, NEL
+      OUTER: DO I = 1, NEL
          IP1 = I + 1
          IF (XBK(I).GT.(XBK(I+1)*TEM1-CU)) THEN
             ERRMSG =
@@ -80,7 +80,7 @@ C
          IF (XP(IP).LT.(XBK(I)*TEM1-CU)) GO TO 20
          IF (XP(IP).GT.(XBK(I+1)*TEM+CU)) THEN
              IP = IP - 1
-             GOTO 240
+             CYCLE OUTER
          END IF
          IF (XP(IP).GE.(XBK(I+1)*TEM1-CU)) THEN
             IF (I.LT.NEL .AND. ITYPE.GE.2) IZ = 1
@@ -93,41 +93,41 @@ C         IX = START OF CORRECT PART OF SOLUTION VECTOR U
 C         FORM THE CHEBYSHEV COEFFS IN THE ARRAY COEFF.
 C        ***************************************************************
          IX = NM1*(I-1)
-         DO 80 K = 1, NPDE
-            DO 60 J = 1, NPTL
+         DO K = 1, NPDE
+            DO J = 1, NPTL
                COEFF(K,J,1) = 0.0D0
-               DO 40 II = 1, NPTL
+               DO II = 1, NPTL
                   COEFF(K,J,1) = COEFF(K,J,1) + OMEGA(J,II)*U(K,IX+II)
-   40          CONTINUE
-   60       CONTINUE
-   80    CONTINUE
+               END DO
+            END DO
+         END DO
 C        FORM THE CHEBYSHEV COEFFS OF THE SPACE DERIV.
          IF (ITYPE.GE.2) THEN
-            DO 120 K = 1, NPDE
+            DO K = 1, NPDE
                COEFF(K,NPTL,2) = 0.0D0
                COEFF(K,NPTL-1,2) = 2.0D0*NM1*COEFF(K,NPTL,1)
-               DO 100 J = 2, NM1
+               DO J = 2, NM1
                   COEFF(K,NPTL-J,2) = COEFF(K,NPTL-J+2,2) + COEFF(K,
      *                                NPTL-J+1,1)*2*(NPTL-J)
-  100          CONTINUE
+               END DO
                COEFF(K,1,2) = COEFF(K,1,2)*0.5D0
-  120       CONTINUE
+            END DO
          END IF
          XCON(1) = 2.0D0/(XBK(I+1)-XBK(I))
          XCON(2) = -0.5D0*XCON(1)*(XBK(I+1)+XBK(I))
          IY = MIN(2,ITYPE)
-  140    DO 200 II = 1, IY
-            DO 180 K = 1, NPDE
+  140    DO II = 1, IY
+            DO K = 1, NPDE
                BR1 = 0.0D0
                BR2 = 0.0D0
 C               COEFF(K,NPTL) IS THE NPTL-TH  COEFF OF SOLUTION OF PDE K
                AL = (XP(IP)*XCON(1)+XCON(2))*2.0D0
                BR = COEFF(K,NPTL,II)
-               DO 160 J = 1, NM1
+               DO J = 1, NM1
                   BR2 = COEFF(K,NPTL-J,II) + AL*BR - BR1
                   BR1 = BR
                   BR = BR2
-  160          CONTINUE
+               END DO
                IF (II.EQ.1) THEN
                   UP(K,IP,II) = BR - BR1*AL*0.5D0
                ELSE IF (IZ.LT.2) THEN
@@ -137,9 +137,9 @@ C               COEFF(K,NPTL) IS THE NPTL-TH  COEFF OF SOLUTION OF PDE K
      *                          *(XBK(I)-XBK(I-1))+(BR-BR1*AL*0.5)
      *                          *XCON(1)*(XBK(I+1)-XBK(I)))
                END IF
-  180       CONTINUE
-  200    CONTINUE
-         IF (IP.EQ.NP) GO TO 240
+            END DO
+         END DO
+         IF (IP.EQ.NP) CYCLE OUTER
          IP = IP + 1
          IF (IZ.EQ.1) THEN
             IZ = 2
@@ -156,7 +156,7 @@ C           DERIVATIVE VALUES THAT ARE REQUESTED AT XBK(I+1)
             GO TO 140
          END IF
   220    IP = IP - 2
-  240 CONTINUE
+      END DO OUTER
       RETURN
   260 IFLAG = 1
       RETURN

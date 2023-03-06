@@ -35,6 +35,7 @@ C
 C        WK(IWK) THE WORKSPACE USED BY THE CHEBYSHEV METHOD. THIS
 C                MUST BE THE WORKSPACE INITIALISED BY INICHB.
 C**********************************************************************
+      USE PDECHEB_COMMON, ONLY: DP
 C COMMON /DISCHK/
       USE PDECHEB_COMMON, ONLY: PDCODE
 C COMMON /SCHSZ/
@@ -46,10 +47,20 @@ C COMMON /SCHSZ1/
 C COMMON /SCHSZ3/
       USE PDECHEB_COMMON, ONLY: TWOU
       IMPLICIT NONE
+      integer, intent(in) :: npde, neq, np
+      real(dp), intent(in) :: xp(np)
+      real(dp), intent(out) :: up(npde,np,itype)
+      real(dp), intent(in) :: u(neq)
+         !> The current solution vector U(NPDE,NPTS) computed by the
+         !> ODE time integrator. NEQ = NPDE*NPTS (+ NV)
+      integer, intent(out) :: iflag
+      integer, intent(in) :: itype
+      real(dp), intent(inout) :: wk(iwk)
+      integer, intent(in) :: iwk
 C     .. Scalar Arguments ..
-      INTEGER           IFLAG, ITYPE, IWK, NEQ, NP, NPDE
+C     INTEGER           IFLAG, ITYPE, IWK, NEQ, NP, NPDE
 C     .. Array Arguments ..
-      DOUBLE PRECISION  U(NEQ), UP(NPDE,NP,ITYPE), WK(IWK), XP(NP)
+C     DOUBLE PRECISION  U(NEQ), UP(NPDE,NP,ITYPE), WK(IWK), XP(NP)
 C     .. Local Scalars ..
       DOUBLE PRECISION  TEMP
       INTEGER           I, IBK, J, K, NPTS
@@ -61,7 +72,7 @@ C     .. Intrinsic Functions ..
 C     .. Executable Statements ..
       IF (PDCODE.NE.'C0CHEB') THEN
          IFLAG = 1
-         GO TO 80
+         RETURN
       END IF
       IFLAG = 0
       IBK   = NEL + 1
@@ -71,14 +82,14 @@ C     .. Executable Statements ..
      *  THE VALUE IS (=I1), BUT SHOULD BE 1 OR 2 '
          CALL SCHERR(ERRMSG,1,1,ITYPE,0,0,0.0D0,0.0D0)
          IFLAG = 3
-         GO TO 80
+         RETURN
       END IF
 C
 C   TEST THE INTERPOLATION POINTS XP(NP) TO ENSURE THAT THEY ARE IN
 C   INCREASING ORDER AND THAT IF ITYPE = 2 (DERIVATIVES REQUIRED) THE
 C   POINTS DO NOT CONFLICT WITH THE BREAK-POINTS.
 C
-      DO 20 I = 2, NP
+      DO I = 2, NP
          TEMP = XP(I) - XP(I-1)
          IF (TEMP.LE.TWOU) THEN
             ERRMSG =
@@ -88,10 +99,10 @@ C
      *UE (=R2).'
             CALL SCHERR(ERRMSG,1,2,J,I,2,XP(J),XP(I))
          END IF
-   20 CONTINUE
+      END DO
       IF (ITYPE.GE.2 .AND. IBK.GT.2) THEN
-         DO 60 I = 1, NP
-            DO 40 J = 2, NEL
+         DO I = 1, NP
+            DO J = 2, NEL
                TEMP = ABS(XP(I)-WK(I5-1+J))
                IF (TEMP.LE.TWOU) THEN
                   K = I5 + J - 1
@@ -102,8 +113,8 @@ C
      * TO BREAK POINT(=I2) WITH VALUE (=R2).'
                   CALL SCHERR(ERRMSG,1,2,I,J,2,XP(I),WK(K))
                END IF
-   40       CONTINUE
-   60    CONTINUE
+            END DO
+         END DO
       END IF
 C
 C    CALL THE INTERPOLATION ROUTINE.
@@ -111,7 +122,6 @@ C
       NPTS = NNPTS
       CALL INTRCH(NP,XP,UP,ITYPE,U,NPTS,NPDE,NEL,NPTL,WK,WK(I10),WK(I5),
      *            IBK,IFLAG)
-   80 CONTINUE
       RETURN
       END
 C***********************************************************************

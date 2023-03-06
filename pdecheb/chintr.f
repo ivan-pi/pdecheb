@@ -76,7 +76,7 @@ C
       IP = 0
       NM1 = NPTL - 1
       IZ = 0
-      DO 280 I = 1, NEL
+      OUTER: DO I = 1, NEL
          IP1 = I + 1
          IF (XBK(I).GT.(XBK(I+1)*TEM1-TWOU)) THEN
             ERRMSG =
@@ -102,41 +102,41 @@ C         IX = START OF CORRECT PART OF SOLUTION VECTOR U
 C         FORM THE CHEBYSHEV COEFFS IN THE ARRAY COEFF.
 C        **************************************************************
          IX = NM1*(I-1)
-         DO 80 K = 1, NPDE
-            DO 60 J = 1, NPTL
+         DO K = 1, NPDE
+            DO J = 1, NPTL
                COEFF(K,J,1) = 0.0D0
-               DO 40 II = 1, NPTL
+               DO II = 1, NPTL
                   COEFF(K,J,1) = COEFF(K,J,1) + OMEGA(J,II)*U(K,IX+II)
-   40          CONTINUE
-   60       CONTINUE
-   80    CONTINUE
+               END DO
+            END DO
+         END DO
 C        FORM THE CHEBYSHEV COEFFS OF THE SPACE DERIV.
          IF (ITYPE.GE.2) THEN
-            DO 120 K = 1, NPDE
+            DO K = 1, NPDE
                COEFF(K,NPTL,2) = 0.0D0
                COEFF(K,NPTL-1,2) = 2.0D0*NM1*COEFF(K,NPTL,1)
-               DO 100 J = 2, NM1
+               DO J = 2, NM1
                   COEFF(K,NPTL-J,2) = COEFF(K,NPTL-J+2,2) + COEFF(K,
      *                                NPTL-J+1,1)*2*(NPTL-J)
-  100          CONTINUE
+               END DO
                COEFF(K,1,2) = COEFF(K,1,2)*0.5D0
-  120       CONTINUE
+            END DO
          END IF
          XCON(1) = 2.0D0/(XBK(I+1)-XBK(I))
          XCON(2) = -0.5D0*XCON(1)*(XBK(I+1)+XBK(I))
          IY = MIN(2,ITYPE)
-  140    DO 200 II = 1, IY
-            DO 180 K = 1, NPDE
+  140    DO II = 1, IY
+            DO K = 1, NPDE
                BR1 = 0.0D0
                BR2 = 0.0D0
 C              COEFF(K,NPTL) IS THE NPTL-TH  COEFF OF SOLUTION OF PDE
                AL = (XP(IP)*XCON(1)+XCON(2))*2.0D0
                BR = COEFF(K,NPTL,II)
-               DO 160 J = 1, NM1
+               DO J = 1, NM1
                   BR2 = COEFF(K,NPTL-J,II) + AL*BR - BR1
                   BR1 = BR
                   BR = BR2
-  160          CONTINUE
+               END DO
                IF (II.EQ.1) THEN
                   UP(K,IP,II) = BR - BR1*AL*0.5D0
                ELSE IF (IZ.LT.2) THEN
@@ -146,18 +146,18 @@ C              COEFF(K,NPTL) IS THE NPTL-TH  COEFF OF SOLUTION OF PDE
      *                          *(XBK(I)-XBK(I-1))+(BR-BR1*AL*0.5)
      *                          *XCON(1)*(XBK(I+1)-XBK(I)))
                END IF
-  180       CONTINUE
-  200    CONTINUE
+            END DO
+         END DO
 C        IF REQUIRED FORM THE FLUX AT THE INTERPLOATED POINTS (UNLESS
 C        DERIV IS BEING FORMED BY WEIGHTED AVERAGE IN WHICH CASE WAIT
 C        UNTIL THE FORMATION IS COMPLETE.
          IF (ITYPE.GE.3 .AND. IZ.NE.1) THEN
 C           ZERO WORKSPACES USED IN THE FLUX CALL.
-            DO 240 J = 1, 3
-               DO 220 K = 1, NPDE
+            DO J = 1, 3
+               DO K = 1, NPDE
                   RT(K,1,J) = 0.0D0
-  220          CONTINUE
-  240       CONTINUE
+               END DO
+            END DO
             IR = 1
 C           FORM THE FLUX AT THE INTERPOLATED POINTS.
             CALL SPDEFN(T,XP(IP),IONE,NPDE,UP(1,IP,1),UP(1,IP,2),RT(1,1,
@@ -170,7 +170,7 @@ C           FORM THE FLUX AT THE INTERPOLATED POINTS.
                GO TO 300
             END IF
          END IF
-         IF (IP.EQ.NP) GO TO 280
+         IF (IP.EQ.NP) CYCLE OUTER
          IP = IP + 1
          IF (IZ.EQ.1) THEN
             IZ = 2
@@ -188,7 +188,7 @@ C           DERIVATIVE VALUES THAT ARE REQUESTED AT XBK(I+1)
             GO TO 140
          END IF
   260    IP = IP - 2
-  280 CONTINUE
+      END DO OUTER
       RETURN
   300 IFLAG = 1
       RETURN

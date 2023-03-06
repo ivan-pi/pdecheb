@@ -1,13 +1,44 @@
       SUBROUTINE CSET(NPDE,NPTS,U,X,OMEGA,DU,XBK,NEL,NPTL,XC,CCR,XBH,
      *                IBK,DUTEM,V,NV)
-      use pdecheb_common, only: ccrule
+      USE PDECHEB_COMMON, ONLY: DP,
+     *   CCRULE
       IMPLICIT NONE
+      integer, intent(in) :: npde, npts
+      real(dp), intent(out) :: u(npde,npts)
+        !> Initial PDE solution
+      real(dp), intent(out) :: x(npts)
+        !> Mesh-used in semi-discretisation
+      real(dp), intent(out) :: omega(nptl,nptl)
+        !> Matrix OMEGA for mapping to coefficients
+      real(dp), intent(out) :: du(nptl,nptl)
+        !> Matrix DU for forming DUDX
+      real(dp), intent(OUT) :: xbk(ibk)
+        !> Copy of array of breakpoints where IBK = NEL + 1
+      integer, intent(in) :: nel
+        !> The number of spatial elements
+      integer, intent(in) :: nptl
+        !> NPTL = NPOLY + 1 (number of polynomial coefficients)
+      real(dp), intent(out) :: xc(nptl)
+        !> Chebyshev points in (-1,1)
+      real(dp), intent(out) :: ccr(nptl)
+        !> COEFFS OF CLENSHAW CURTIS RULE OF DEGREE NPTL-1.
+      real(dp), INTENT(IN) :: xbh(ibk)
+        !> Real array of break points; will be copied into XBK(:)
+      integer, intent(in) :: ibk
+        !> Number of break-points
+      real(dp), intent(inout) :: dutem(nptl,nptl)
+        !> Temporary work-area
+      real(dp), intent(out) :: v(*)
+        !> Vector of ODE components of length NV
+      integer, intent(in) :: nv
+        !> Number of ODE components
+
 C     .. Scalar Arguments ..
-      INTEGER         IBK, NEL, NPDE, NPTL, NPTS, NV
+C      INTEGER         IBK, NEL, NPDE, NPTL, NPTS, NV
 C     .. Array Arguments ..
-      DOUBLE PRECISION CCR(NPTL), DU(NPTL,NPTL), DUTEM(NPTL,NPTL),
-     *                OMEGA(NPTL,NPTL), U(NPDE,NPTS), V(*), X(NPTS),
-     *                XBH(IBK), XBK(IBK), XC(NPTL)
+C      DOUBLE PRECISION CCR(NPTL), DU(NPTL,NPTL), DUTEM(NPTL,NPTL),
+C     *                OMEGA(NPTL,NPTL), U(NPDE,NPTS), V(*), X(NPTS),
+C     *                XBH(IBK), XBK(IBK), XC(NPTL)
 C     .. Local Scalars ..
       DOUBLE PRECISION H1, H2, PI, SINT, SUM, TEMP
       INTEGER         I, IJ, ITEM, J, K, NM1, NT, NTP1

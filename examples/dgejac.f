@@ -44,12 +44,12 @@ C               you do choose to use them, dimension them in your callin
 C               program and in jac as arrays of appropriate length.
 
       subroutine dgejac(t,y,yprime,pd,cj,rpar,ipar)
-c     intent(in)
       double precision t, y(*), yprime(*), cj
+      intent(in) t, y, yprime, cj
       double precision rpar(*)
       integer ipar(*)
-c     intent(inout)
       double precision pd(*)
+      intent(inout) rpar, ipar, pd
 c
 c     dummy routine
 c

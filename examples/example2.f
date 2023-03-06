@@ -15,7 +15,7 @@ C      THE INITIAL CONDITION IS GIVEN BY THE EXACT SOLUTION ;
 C        U( X, T )  = EXP ( 1 - X*X - T )  , X IN ( 0,1)
 C                            2
 C**********************************************************************
-Y
+C
 C     C0 COLLOCATION PARAMETERS
         PARAMETER ( IBK   =  2, NEL  = IBK-1 , NPDE = 1, NV = 0,
      1              NPOLY = 10, NPTS = NEL*NPOLY+1,     NXI = 0,
@@ -142,11 +142,12 @@ C      DUMMY O.D.E. ROUTINE AS NV IS ZERO
        RETURN
        END
 C EXACT SOLUTION
-       SUBROUTINE EXACT( TIME, NPDE, NPTS, X, U)
-C      ROUTINE FOR P.D.E. EXACT VALUES  (IF KNOWN)
-       INTEGER NPDE, NPTS, I
-       DOUBLE PRECISION X(NPTS), U(NPDE,NPTS), TIME
-       DO 10 I = 1,NPTS
- 10       U(1,I) = DEXP( 1.0D0 - X(I)**2 - TIME)
-       RETURN
-       END
+      SUBROUTINE EXACT( TIME, NPDE, NPTS, X, U)
+C     ROUTINE FOR P.D.E. EXACT VALUES  (IF KNOWN)
+      INTEGER NPDE, NPTS, I
+      DOUBLE PRECISION X(NPTS), U(NPDE,NPTS), TIME
+      DO I = 1,NPTS
+         U(1,I) = EXP(1.0D0 - X(I)**2 - TIME)
+      END DO
+      RETURN
+      END

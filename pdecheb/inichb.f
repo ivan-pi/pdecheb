@@ -269,7 +269,7 @@ C     .. Executable Statements ..
          ITIME = -1
          RETURN
       END IF
-      DO 20 I = 2, IBK
+      DO I = 2, IBK
          IF (XBK(I).LE.XBK(I-1)) THEN
             ERRMSG =
      *' INICHB - BREAKPOINT NO (=I1) HAS VALUE (=R1)            WHICH IS
@@ -279,7 +279,7 @@ C     .. Executable Statements ..
             ITIME = -1
             RETURN
          END IF
-   20 CONTINUE
+      END DO
 C
 C   CALCULATE ROUGH ESTIMATE OF UNIT ROUND-OFF ERROR FOR CHECKING
 C
@@ -291,14 +291,15 @@ Cx      ELSE
 Cx         TWOU = TWOU*0.5D0
 Cx         GO TO 40
 Cx      END IF
+C TODO: IS THIS REFACTORING OKAY!?
       TWOU = EPSILON(TWOU)
 C
 C  CHECK IF THE BREAK-POINTS MATCH THE COUPLING POINTS.
 C
       IF (IBK.GT.2 .AND. NXI.GT.0) THEN
          IBKM1 = IBK - 1
-         DO 80 I = 2, IBKM1
-            DO 60 J = 1, NXI
+         DO I = 2, IBKM1
+            DO J = 1, NXI
                TEMP = ABS(XI(J)-XBK(I))
                TEMP2 = TWOU/MAX(TEMP,1.0D0)
                IF (TEMP.LT.TEMP2) THEN
@@ -309,8 +310,8 @@ C                 COUPLING POINT IS TOO CLOSE TO BREAK-POINT
      *INT (=I2) WITH VALUE (=R2)'
                   CALL SCHERR(ERRMSG,1,2,J,I,2,XI(J),XBK(I))
                END IF
-   60       CONTINUE
-   80    CONTINUE
+            END DO
+         END DO
       END IF
 *
 C
@@ -357,25 +358,25 @@ C
       IF (NV.GT.0) THEN
          IV = NVST
 C        COPY ACROSS THE COUPLING POINTS
-         DO 100 I = 1, NXI
+         DO I = 1, NXI
             WK(I18+I-1) = XI(I)
-  100    CONTINUE
-         DO 120 I = 2, NXI
+         END DO
+         DO I = 2, NXI
             IF (XI(I).LE.XI(I-1)) THEN
                ERRMSG =
      *' INICHB WARNING THE ODE/PDE COUPLING POINTS              COUPLING
      * POINTS ARE NOT IN STRICTLY INCREASING ORDER'
                CALL SCHERR(ERRMSG,1,0,0,0,0,0.0D0,0.0D0)
             END IF
-  120    CONTINUE
+         END DO
       END IF
 C
       CALL CSET(NPDE,NPTS,U,WK(I6),WK,WK(I2),WK(I5),NEL,NPTL,WK(I4),
      *          WK(I12),XBK,IBK,WK(I3),U(IV),NV)
 C
-  140 DO 160 I = 1, NPTS
+  140 DO I = 1, NPTS
          X(I) = WK(I6+I-1)
-  160 CONTINUE
+      END DO
       NNNPTL = NPTL
       RETURN
       END
