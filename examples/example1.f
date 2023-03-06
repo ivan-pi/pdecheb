@@ -9,7 +9,7 @@ C     DDASSL TIME INTEGRATION PARAMETERS
      6              LIW = 20 + NEQ )
 C
         INTEGER IWORK(LIW), INFO(15), IBAND, M, ITIME, I, IDID, IRESWK,
-     1          IDEV, ITRACE
+     1          IDEV, ITRACE, NEQN
         DOUBLE PRECISION XBK(IBK), X(NPTS), Y(NEQ), YDOT(NEQ),
      1          WKRES(NWKRES), RWORK(LRW), XI(1), T, TOUT, RTOL, ATOL,
      2          ENORM, GERR, VERROR, CTIME, TOL
@@ -31,7 +31,7 @@ C       CALL TIMER( CTIME, 1)
  10       XBK(I) = (I-1.0D0)/(IBK-1.0D0)
 C           INITIALISE THE P.D.E. WORKSPACE
         ITIME  = 1
-        CALL INICHB(NEQ, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
+        CALL INICHB(NEQN, NPDE, NPTS, X, Y, WKRES, NWKRES, M, T, IBAND,
      1              ITIME, XBK, IBK, NEL, NPOLY, NV, NXI, XI, IDEV)
         IF(ITIME .EQ. -1)THEN
            WRITE(IDEV, 15)
