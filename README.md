@@ -36,3 +36,35 @@ flowchart BT
     l2_1-->L1
     l2_2-->L1
 ```
+
+```mermaid
+---
+title: PDECHEB Architecture
+---
+graph BT
+
+    subgraph A[Public interface]
+        A2[INICHB]
+        A1[PDECHB]
+        A3[INTERC]
+    end
+
+    B1[CHINTR]-->A1
+    B2[CRES and DRES]-->A1
+
+    subgraph U["User-provided routines"]
+        U1[SPDEFN]
+        U2[SBNDR]
+        U3[SODEFN]
+        U4[UVINIT]
+    end
+
+    U1-->B2
+    U2-->B2
+
+    U1-->B1
+    U3-->A1
+
+    C1[INTRCH]-->A3
+    U4-->C2[CSET]-->A2
+```
