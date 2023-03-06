@@ -40,7 +40,7 @@ C     .. Scalar Arguments ..
       INTEGER           IBK, IFLAG, ITYPE, NEL, NP, NPDE, NPTL, NPTS
 C     .. Array Arguments ..
       DOUBLE PRECISION  COEFF(NPDE,NPTL,2), OMEGA(NPTL,NPTL),
-     *                  U(NPDE,NPTS), UP(NPDE,NP,1), XBK(IBK), XP(NP)
+     *                  U(NPDE,NPTS), UP(NPDE,NP,*), XBK(IBK), XP(NP)
 C     .. Scalars in Common ..
       DOUBLE PRECISION  TWOU
 C     .. Local Scalars ..
