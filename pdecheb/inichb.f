@@ -145,7 +145,7 @@ C     .. Scalar Arguments ..
       INTEGER           IBAND, IBK, IDEV, ITIME, IWK, M, NEL, NEQN,
      *                  NPDE, NPOLY, NPTS, NV, NXI
 C     .. Array Arguments ..
-      DOUBLE PRECISION  U(1), WK(IWK), X(NPTS), XBK(IBK), XI(1)
+      DOUBLE PRECISION  U(*), WK(IWK), X(NPTS), XBK(IBK), XI(*)
 C     .. Scalars in Common ..
       DOUBLE PRECISION  TO, TWOU
       INTEGER           I10, I10A, I10B, I11, I11A, I11B, I12, I13, I14,
