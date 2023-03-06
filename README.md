@@ -4,7 +4,7 @@ title: An Overview of using DASSL and PDECHEB
 ---
 flowchart BT
 
-    subgraph L4[User provided ODE]
+    subgraph L4[User provided PDE/ODE]
         l4_1[UVINIT\nPDE/ODE\nInitial\nconditions]
         l4_2[SPDEFN\nBody of PDE]
         l4_3[SBNDR\nBoundary\nconditions]
@@ -21,11 +21,8 @@ flowchart BT
     l4_3-->l3_2
     l4_4-->l3_2
 
-    subgraph L2 ["Time Integration Routines"]
-        direction RL
+    subgraph L2[Time integration]
         l2_1[DASSL\nIntegrate the solution\nfrom TSTART to TOUT]
-        l2_2[Time\ninterpolation\nroutine]
-        l2_2---l2_1
     end
     l3_2-->l2_1
 
@@ -34,12 +31,11 @@ flowchart BT
     l3_1-->L1
     l3_3-->L1
     l2_1-->L1
-    l2_2-->L1
 ```
 
 ```mermaid
 ---
-title: PDECHEB Architecture
+title: PDECHEB Internal Architecture
 ---
 graph BT
 
