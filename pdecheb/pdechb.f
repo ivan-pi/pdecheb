@@ -25,8 +25,8 @@ C     .. Scalar Arguments ..
       DOUBLE PRECISION  T
       INTEGER           IRES
 C     .. Array Arguments ..
-      DOUBLE PRECISION  RESD(1), U(1), UDOT(1), WK(1)
-      INTEGER           IWK(1)
+      DOUBLE PRECISION  RESD(*), U(*), UDOT(*), WK(*)
+      INTEGER           IWK(*)
 C     .. Scalars in Common ..
       INTEGER           I10, I10A, I10B, I11, I11A, I11B, I12, I13, I14,
      *                  I15, I16, I17, I18, I19, I2, I3, I4, I5, I6, I7,
