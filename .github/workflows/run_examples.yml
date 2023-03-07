@@ -55,8 +55,8 @@ jobs:
 
     - name: Run example programs
       run: |
-        ./ex1
-        ./ex2
-        ./ex3
-        ./ex4
-        ./ex5
+        ./build/ex1
+        ./build/ex2
+        ./build/ex3
+        ./build/ex4
+        ./build/ex5
