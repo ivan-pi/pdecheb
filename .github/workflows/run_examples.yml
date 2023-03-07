@@ -45,8 +45,9 @@ jobs:
     - name: Configure with CMake
       if: ${{ contains(matrix.build, 'cmake') }}
       run: >-
-        cmake 
-        -DCMAKE_Fortran_FLAGS="${{ matrix.release-flags }}"
+        cmake
+        -DCMAKE_BUILD_TYPE=Debug
+        -DCMAKE_Fortran_FLAGS="${{ matrix.debug-flags }}"
         -S . -B ${{ env.BUILD_DIR }}
 
     - name: Build and compile
