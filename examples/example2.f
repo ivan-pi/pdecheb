@@ -21,7 +21,7 @@ C  CPU TIMER COMMENTED OUT FOR PORTABILITY
 C       CALL TIMER(CTIME ,1)
         M    = 2
         T    = 0.0D0
-        IDEV = 4
+        IDEV = 6
         ITRACE = 1
         WRITE(IDEV,9)NPOLY, NEL
  9      FORMAT(' TEST PROBLEM 1'/' ***********'/' POLY OF DEGREE =',I4,

@@ -52,7 +52,7 @@ C       CALL TIMER (CPU, 1)
          RTOL = 0.1D-4
          ATOL = 0.1D-4
          ITRACE = 0
-         IDEV = 4
+         IDEV = 6
          WRITE(IDEV,104)RTOL, ATOL, ITRACE, IDEV
 104      FORMAT(//' RTOL=',D12.3,' ATOL=',D12.3,' ITRACE AND IDEV=',2I4)
 C
