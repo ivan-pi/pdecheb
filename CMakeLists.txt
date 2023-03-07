@@ -8,18 +8,11 @@ project(pdecheb
 
 add_library(linpack linpack/linpack.f)
 
-add_library(dassl
-    dassl/ddaini.f
-    dassl/ddajac.f
-    dassl/ddanrm.f
-    dassl/ddaslv.f
-    dassl/ddassl.f
-    dassl/ddastp.f
-    dassl/ddatrp.f
-    dassl/ddawts.f
-    dassl/s88fmt.f
-    dassl/scherr.f
-    dassl/xerrwv.f)
+file(DOWNLOAD https://netlib.org/ode/ddassl.f ddassl.f
+    EXPECTED_MD5 0c88cc5a08ecc31162bf0e3fead9365d)
+
+add_library(dassl ddassl.f)
+
 target_link_libraries(dassl PRIVATE linpack)
 target_compile_options(dassl PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
@@ -32,7 +25,8 @@ add_library(pdecheb
     pdecheb/inichb.f
     pdecheb/interc.f
     pdecheb/intrch.f
-    pdecheb/pdechb.f)
+    pdecheb/pdechb.f
+    pdecheb/scherr.f)
 
 target_compile_options(pdecheb PRIVATE "$<$<Fortran_COMPILER_ID:GNU>:-std=legacy>")
 
