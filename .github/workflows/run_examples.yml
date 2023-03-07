@@ -46,7 +46,7 @@ jobs:
       if: ${{ contains(matrix.build, 'cmake') }}
       run: >-
         cmake 
-        -DCMAKE_Fortran_FLAGS=${{ matrix.release-flags }}
+        -DCMAKE_Fortran_FLAGS="${{ matrix.release-flags }}"
         -S . -B ${{ env.BUILD_DIR }}
 
     - name: Build and compile
