@@ -54,7 +54,7 @@ jobs:
       run: cmake --build ${{ env.BUILD_DIR }}
 
     - name: Run example programs
-      run:
+      run: |
         ./ex1
         ./ex2
         ./ex3
