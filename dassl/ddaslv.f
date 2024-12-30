@@ -21,7 +21,7 @@ C     dgbsl is called.
 C-----------------------------------------------------------------------
 C
       IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION DELTA(1),WM(1),IWM(1)
+      DIMENSION DELTA(*),WM(*),IWM(*)
       COMMON/DDA001/NPD,NTEMP,LML,LMU,
      *  LMXORD,LMTYPE,
      *  LNST,LNRE,LNJE,LETF,LCTF,LIPVT

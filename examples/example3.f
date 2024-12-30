@@ -107,22 +107,22 @@ C     ROUTINE FOR P.D.E. EXACT VALUES  (IF KNOWN)
       END
 C
 C     C0 COLLOCATION PARAMETERS
-        PARAMETER ( IBK   = 3, NEL  = IBK-1 , NPDE = 1, NV = 0,
-     1              NPOLY = 6, NPTS = NEL*NPOLY+1,     NXI = 0,
-     2              NEQ   = NPTS * NPDE + NV,
-     3              NWKRES= (NPOLY+1) * (5*NXI + 3*NPOLY+NEL+5+7*NPDE) +
-     4                       NPDE * 8 + 3 + NV + NXI,
-C    3              NWKRES= 2*(NPOLY+1)*(NPOLY+NEL+2) + 2 + NV +
-C    4                       NPDE * (7 * (NPOLY+1+NXI) + 8),
+      PARAMETER ( IBK   = 3, NEL  = IBK-1 , NPDE = 1, NV = 0,
+     1            NPOLY = 6, NPTS = NEL*NPOLY+1,     NXI = 0,
+     2            NEQ   = NPTS * NPDE + NV,
+     3            NWKRES= (NPOLY+1) * (5*NXI + 3*NPOLY+NEL+5+7*NPDE) +
+     4                     NPDE * 8 + 3 + NV + NXI,
+C    3            NWKRES= 2*(NPOLY+1)*(NPOLY+NEL+2) + 2 + NV +
+C    4                    NPDE * (7 * (NPOLY+1+NXI) + 8),
 C     DDASSL TIME INTEGRATION PARAMETERS
-     5              MAXORD = 5, LRW = 40 + (MAXORD+4) * NEQ + NEQ**2,
-     6              LIW = 20 + NEQ )
+     5            MAXORD = 5, LRW = 40 + (MAXORD+4) * NEQ + NEQ**2,
+     6            LIW = 20 + NEQ )
 C
-        INTEGER IWORK(LIW), INFO(15), IBAND, M, ITIME, I, IDID, IRESWK,
-     1          IDEV, ITRACE, IDERIV, IFL, ITYPE, NEQN
-        DOUBLE PRECISION XBK(IBK), X(NPTS), Y(NEQ), YDOT(NEQ), Z(NPTS),
-     1          WKRES(NWKRES), RWORK(LRW), XI(1), T, TOUT, RTOL, ATOL,
-     2          ENORM, GERR, CTIME, DYDX(NEQ), DYCALC(NPDE,NPTS,2)
+      INTEGER IWORK(LIW), INFO(15), IBAND, M, ITIME, I, IDID, IRESWK,
+     1        IDEV, ITRACE, IDERIV, IFL, ITYPE, NEQN
+      DOUBLE PRECISION XBK(IBK), X(NPTS), Y(NEQ), YDOT(NEQ), Z(NPTS),
+     1        WKRES(NWKRES), RWORK(LRW), XI(1), T, TOUT, RTOL, ATOL,
+     2        ENORM, GERR, CTIME, DYDX(NEQ), DYCALC(NPDE,NPTS,2)
       EXTERNAL PDECHB, DGEJAC
       COMMON /SDEV2/ ITRACE, IDEV
       COMMON /PROB3/IDERIV

@@ -51,8 +51,8 @@ C                 THE D.A.E.FUNCTION CALL ROUTINE  RESID
 C                 SEE BELOW FOR A DETAILED DESCRIPTION.(INPUT)
 C
 C***********************************************************************
-      use pdecheb_common, only: idev
-      implicit none
+      USE PDECHEB_COMMON, ONLY: IDEV
+      IMPLICIT NONE
 C     .. Scalar Arguments ..
       DOUBLE PRECISION ABSERR, ENORM, GERR, RELERR, T
       INTEGER          ITRACE, IWK, M, NPDE, NPTS
@@ -76,54 +76,54 @@ C
       IF (EPS.LE.0.0) RETURN
       EREL = RELERR/EPS
       EABS = ABSERR/EPS
-      DO 40 IN = 1, NPDE
+      DO IN = 1, NPDE
          WX(IN) = 0.0D0
-         DO 20 I = 1, NPTS
+         DO I = 1, NPTS
             EPS = ABS(U(IN,I))
             IF (WX(IN).LT.EPS) WX(IN) = EPS
-   20    CONTINUE
+         END DO
          WX(IN) = WX(IN)*EREL + EABS
-   40 CONTINUE
+      END DO
       NP = 201
       HH = (X(NPTS)-X(1))/(NP-1)
-      DO 60 IN = 1, NPDE
+      DO IN = 1, NPDE
          ERR(IN) = 0.0D0
-   60 CONTINUE
+      END DO
       WS = 1.0D0
-      DO 80 I = 1, NP
+      DO I = 1, NP
          XP(I) = X(1) + (I-1)*HH
-   80 CONTINUE
+      END DO
       NEQ = NPTS*NPDE
       CALL INTERC(XP,US,NP,U,NEQ,NPDE,IFLAG,IONE,RWK,IWK)
       JI = 1
-      DO 120 I = 1, NP
+      DO I = 1, NP
          CALL EXACT(T,NPDE,IONE,XP(I),UN)
          IF (M.NE.0) WS = XP(I)**M
-         DO 100 IN = 1, NPDE
+         DO IN = 1, NPDE
             ER = ABS(US(JI)-UN(IN))
             ERR(IN) = ERR(IN) + WS*ER**2
             JI = JI + 1
-  100    CONTINUE
-  120 CONTINUE
+         END DO
+      END DO
       ENORM = 0.0D0
-      DO 140 IN = 1, NPDE
+      DO IN = 1, NPDE
          ENORM = ENORM + ERR(IN)/WX(IN)**2
-  140 CONTINUE
+      END DO
       ENORM = SQRT(ENORM*HH)
 C
 C       COMPUTE THE MAXIMUM ERROR AT THE GRID POINTS
 C
       IF (ITRACE.GE.1) WRITE (IDEV,FMT=99999)
       GERR = 0.0D0
-      DO 180 I = 1, NPTS
+      DO I = 1, NPTS
          CALL EXACT(T,NPDE,IONE,X(I),UN)
-         DO 160 IN = 1, NPDE
+         DO IN = 1, NPDE
             ER = ABS(U(IN,I)-UN(IN))
             IF (ITRACE.GE.1) WRITE (IDEV,FMT=99998) X(I), U(IN,I),
      *          UN(IN), ER
             IF (GERR.LT.ER) GERR = ER
-  160    CONTINUE
-  180 CONTINUE
+         END DO
+      END DO
       IF (ITRACE.GT.0) WRITE (IDEV,FMT=99997) ENORM, GERR
       RETURN
 C

@@ -110,11 +110,11 @@ C      NOTE NV = 0 : THERE IS NO O.D.E PART.
        DOUBLE PRECISION T, X(NPTL), U(NPDE,NPTL), DUDX(NPDE,NPTL),
      1         UDOT(NPDE,NPTL), Q(NPDE,NPTL), R(NPDE,NPTL), V, VDOT,
      2         UTDX(NPDE,NPTL)
-       DO 10 I = 1,NPTL
-          R(1,I) = U(1,I) * DUDX(1,I)
-          Q(1,I) = U(1,I) * UDOT(1,I) - 5.0D0 * U(1,I)**2
+      DO I = 1,NPTL
+         R(1,I) = U(1,I) * DUDX(1,I)
+         Q(1,I) = U(1,I) * UDOT(1,I) - 5.0D0 * U(1,I)**2
      1                                - 4.0D0 * U(1,I)*DUDX(1,I)*X(I)
- 10    CONTINUE
+      END DO
        RETURN
        END
 C

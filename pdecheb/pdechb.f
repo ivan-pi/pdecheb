@@ -109,6 +109,9 @@ C        LINEAR BASIS FUNCTION VERSION.
          GO TO 60
       END IF
       RETURN
+C
+C     ERROR HANDLING
+C
    60 IRES = IR
       IF (IR.EQ.-2) THEN
          ERRMSG =

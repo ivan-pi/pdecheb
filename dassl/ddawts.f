@@ -14,17 +14,24 @@ C     rtol and atol are scalars if iwt = 0,
 C     and vectors if iwt = 1.
 C-----------------------------------------------------------------------
 C
-      IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION RTOL(1),ATOL(1),Y(1),WT(1)
-      DIMENSION RPAR(1),IPAR(1)
+      IMPLICIT NONE
+      INTEGER, PARAMETER :: DP = KIND(1.0D0)
+      INTEGER NEQ, IWT
+      REAL(DP) RTOL(*), ATOL(*), Y(*), WT(*), RPAR(*)
+      INTEGER IPAR(*)
+C     .. Local Scalars ..
+      REAL(DP) RTOLI, ATOLI
+      INTEGER I
+C     .. Executable Statements ..
       RTOLI=RTOL(1)
       ATOLI=ATOL(1)
-      DO 20 I=1,NEQ
-         IF (IWT .EQ.0) GO TO 10
+      DO I=1,NEQ
+         IF (IWT == 1) THEN
            RTOLI=RTOL(I)
            ATOLI=ATOL(I)
-10         WT(I)=RTOLI*DABS(Y(I))+ATOLI
-20         CONTINUE
+         END IF
+         WT(I)=RTOLI*DABS(Y(I))+ATOLI
+      END DO
       RETURN
 C-----------end of subroutine ddawts------------------------------------
       END

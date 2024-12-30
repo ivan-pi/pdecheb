@@ -46,8 +46,8 @@ C-----------------------------------------------------------------------
 C
       IMPLICIT REAL*8(A-H,O-Z)
       EXTERNAL RES,JAC
-      DIMENSION Y(1),YPRIME(1),DELTA(1),WT(1),E(1)
-      DIMENSION WM(1),IWM(1),RPAR(1),IPAR(1)
+      DIMENSION Y(*),YPRIME(*),DELTA(*),WT(*),E(*)
+      DIMENSION WM(*),IWM(*),RPAR(*),IPAR(*)
       COMMON/DDA001/NPD,NTEMP,
      *  LML,LMU,LMXORD,LMTYPE,
      *  LNST,LNRE,LNJE,LETF,LCTF,LIPVT
